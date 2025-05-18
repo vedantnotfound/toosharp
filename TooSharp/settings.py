@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,13 +25,11 @@ SECRET_KEY = 'django-insecure-f1!$lfp*(5f-m(#+z0jny%kl5an-)@96&rnqhykez*3fhv@)rq
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ['.railway.app', '127.0.0.1', 'localhost']  # Replace with Railway's domain if needed
 
-ALLOWED_HOSTS = ["15.206.18.74","task.sharpmultimedia.in", "www.task.sharpmultimedia.in", "127.0.0.1"]
-
-CSRF_TRUSTED_ORIGINS = ["http://15.206.18.74/", "https://task.sharpmultimedia.in", "https://www.task.sharpmultimedia.in",
-                        "https://127.0.0.1", "https://127.0.0.1:8000",
-                        "http://127.0.0.1:8000",
-                        "https://www.task.sharpmultimedia.in"]
+CSRF_TRUSTED_ORIGINS = [
+    'https://toosharp-production.up.railway.app/',
+]
 
 LOGIN_URL = '/login/'
 # Application definition
@@ -49,6 +48,8 @@ INSTALLED_APPS = [
 
 
 ]
+# ✅ Use Whitenoise for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 ]
 
 ROOT_URLCONF = 'TooSharp.urls'
@@ -85,11 +87,19 @@ WSGI_APPLICATION = 'TooSharp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# ✅ Database settings (Railway PostgreSQL support)
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3'  # fallback if DATABASE_URL not set
+    )
 }
 
 
