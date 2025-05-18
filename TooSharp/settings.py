@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['.railway.app', '127.0.0.1', 'localhost']  # Replace with Railway's domain if needed
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://toosharp-production.up.railway.app/',
+    'https://toosharp-production.up.railway.app',
 ]
 
 LOGIN_URL = '/login/'
