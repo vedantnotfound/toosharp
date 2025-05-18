@@ -1,0 +1,281 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title -->
+    <title>TooSharp - {% block title %} {% endblock title %}</title>
+    <link rel="shortcut icon" href="/static/img/toosharp favicon.png" type="image/x-icon">
+
+    <!-- Play CDN - TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link CSS -->
+    <link rel="stylesheet" href="/static/css/index.css">
+
+    <!-- Poppins Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+
+    <!-- Flaticons CDN -->
+
+    <!-- Solid Rounded - sr -->
+    <link rel='stylesheet'
+        href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+    <!-- Regular Rounded - rr -->
+    <link rel='stylesheet'
+        href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+
+
+    <!-- Flatpicker for date Selection -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
+</head>
+
+<body>
+
+    <main class="w-full h-full flex items-start overflow-hidden">
+        <!-- Overlay -->
+        <div id="overlay" onclick="closeMenu()" class="hidden w-[100%] h-[100vh] fixed top-0 left-0 right-0 bottom-0 bg-blue-950 bg-opacity-50 cursor-pointer z-[99]"></div>
+        <!-- Sidebar -->
+        <section id="sidebar" class="translate-x-[-100%] xl:translate-x-0 xl:block w-[270px]  xl:w-[18%] transition duration-[0.3s] h-[100vh] fixed top-0 bottom-0 left-0 sidebarBg border-r z-[100]">
+            <!-- Topbar -->
+            <div class="w-full h-[60px] flex items-center justify-between px-[20px] border-b ">
+                <!-- <div class="flex items-center">
+                    <span class="text-[1.3rem] lightFont text-[#454545]">Too</span><span
+                        class="text-[1.3rem] boldFont blueColor">Sharp</span>
+                </div> -->
+                <div>
+                    <img src="/static/img/toosharp logo.png" class="w-[120px]" alt="">
+                </div>
+                <div class="flex items-center gap-[10px]">
+                    {% if request.user.employee.profile_photo %}
+                    <a href="{% url 'settings' %}">
+                        <div class="cursor-pointer w-[35px] h-[35px] bg-slate-200 rounded-full overflow-hidden">
+                            <img src="{{ request.user.employee.profile_photo.url }}" class="w-full h-full object-cover object-top" alt="">
+                        </div>
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'notifications' %}">
+                        <div class="relative w-[35px] cursor-pointer h-[35px] bg-slate-200 rounded-full flex items-center justify-center">
+                            <i class="fi fi-rr-bell text-[#454545] relative top-[2px]"></i>
+                            
+                            <!-- Unread Notification Badge -->
+                            {% if unread_notifications > 0 %}
+                                <div class="absolute top-0 right-0 blueBg text-white text-xs rounded-full w-[16px] h-[16px] flex items-center justify-center">
+                                    {{ unread_notifications }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+
+            <audio id="notification-sound">
+                <source src="{% static 'sounds/notification.wav' %}" type="audio/wav">
+            </audio>
+            
+            <!-- ----------------------- Basic Opertations --------------------- -->
+            <div class="py-[20px] border-b">
+                {% if request.user.employee.admin_access or request.user.employee.team_leader_access %}
+                <!-- Add Task tab -->
+                <div id="sidebarAddTaskBtn" onclick="sidebarAddTaskBtn()" class="flex items-center gap-[15px] w-full hover:bg-slate-100 cursor-pointer px-[20px] h-[40px] 
+                    {% if request.path == '/add_task/' %}bg-slate-200{% endif %}">
+                    <div class="w-[25px] h-[25px] flex items-center justify-center blueBg rounded-full">
+                        <i class="fi fi-rr-plus text-white text-[11px] relative top-[1px]"></i>
+                    </div>
+                    <p class="text-[14px]">Add Task</p>
+                </div>
+                <a href="{% url 'given_task' %}">
+                    <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/task/given_task/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-paper-plane textColor text-[17px] relative top-[3px]"></i>
+                        <p class="text-[14px]">Given Task</p>
+                    </div>
+                </a>
+                
+                {% endif %}
+            
+                <!-- Search tab -->
+                <!-- <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                    {% if request.path == '/search/' %}bg-slate-200{% endif %}">
+                    <i class="fi fi-rr-search textColor text-[17px] relative top-[1px]"></i>
+                    <p class="text-[14px]">Search</p>
+                </div> -->
+            
+                <!-- Today tab -->
+                <a href="{% url 'home' %}">
+                    <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px] 
+                        {% if request.path == '/home' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-calendar-day textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">Today</p>
+                    </div>
+                </a>
+            
+                <!-- Upcoming tab -->
+                <a href="{% url 'upcoming' %}">
+                    <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/task/upcoming/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-calendar-clock textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">Upcoming</p>
+                    </div>
+                </a>
+            
+                <!-- History tab -->
+                <a href="{% url 'history' %}">
+                    <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/task/history/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-progress-complete textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">Completed</p>
+                    </div>
+                </a>
+                <a href="{% url 'incomplete_task' %}">
+                    <div class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/task/incomplete_task/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-pending textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]"> Overdue</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ----------------------- Membership Opertations --------------------- -->
+            {% if request.user.employee.admin_access or request.user.employee.team_leader_access or request.user.employee.membership_access%}
+            <div class="py-[20px] border-b">
+                <p class="blueColor underline-offset-4 underline px-[20px] text-[12px]">Membership Operations</p>
+                <div class="pt-[10px]">
+                    <!-- All members tab -->
+                    <a href="{% url 'all_members' %}" class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/employee/all_members/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-employee-man-alt textColor text-[19px] relative top-[1px]"></i>
+                        <p class="text-[14px]">All members</p>
+                    </a>
+                    
+                    <!-- Add members tab -->
+                    <a href="{% url 'add_member' %}" class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/employee/add_member/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-user-add textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">Add members</p>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+
+            <!-- ----------------------- Department Opertations --------------------- -->
+            {% if request.user.employee.admin_access or request.user.employee.team_leader_access or request.user.employee.department_access %}
+            <div class="py-[20px] border-b ">
+                <p class="blueColor underline-offset-4 underline px-[20px] text-[12px]">Department Operations</p>
+                <div class="pt-[10px]">
+                    <!-- All Dept tab -->
+                    <a href="{% url 'all_department' %}" class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/department/all_department/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-apps textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">All departments</p>
+                    </a>
+                    
+                    <!-- Add Dept tab -->
+                    <a href="{% url 'add_department' %}" class="flex items-center w-full hover:bg-slate-100 cursor-pointer gap-[15px] h-[40px] px-[23px]
+                        {% if request.path == '/department/add_department/' %}bg-slate-200{% endif %}">
+                        <i class="fi fi-rr-apps-add textColor text-[17px] relative top-[1px]"></i>
+                        <p class="text-[14px]">Add departments</p>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ----------------------- Settings --------------------- -->
+            <div class="py-[20px]  w-full">
+                <!-- Setting tab -->
+                <a href="{% url 'settings' %}"
+                    class="flex cursor-pointer hover:bg-slate-100 items-center border-t w-full sticky sm:absolute bottom-0 gap-[15px] h-[40px]  px-[23px]">
+                    <i class="fi fi-rr-settings textColor text-[17px] relative top-[1px]"></i>
+                    <p class="text-[14px]">Setting</p>
+                </a>
+
+            </div>
+
+        </section>
+
+        {% block main-content %}
+
+        {% endblock main-content %}
+
+
+    </main>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Script -->
+    <script src="/static/js/base.js"></script>
+
+    
+
+    <script>
+
+
+        let lastNotificationCount = 0; // Stores the previous unread notification count
+        let playedNotifications = new Set(); // Tracks notifications that have already rung
+        
+                // Function to play sound using Web Audio API
+        function playNotificationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            fetch('/static/sounds/notification.wav') // Replace with your actual file path
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                .then(audioBuffer => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+                    
+                    // Reload after the audio finishes playing
+                    source.onended = () => {
+                        console.log("🔔 Notification sound finished. Reloading the page...");
+                        location.reload();
+                    };
+
+                    source.start(0);
+                    console.log("🔔 Notification sound played!");
+                })
+                .catch(error => console.error("🔴 Error playing sound:", error));
+        }
+
+        function checkNotifications() {
+            console.log("Checking for new notifications...");
+
+            fetch('/check-notifications/') 
+                .then(response => response.json())
+                .then(data => {
+                    if (data.new_notification) {
+                        console.log(data.new_notification);
+                        playNotificationSound();  // Play sound and reload on completion
+                    }
+                })
+                .catch(error => console.error('🔴 Error fetching notifications:', error));
+        }
+
+        
+        // Check every 5 seconds for real-time updates
+        setInterval(checkNotifications, 5000);
+        
+        window.onload = function() {
+            checkNotifications();
+        };
+        
+        
+            </script>    
+    
+    {% block js-block %}
+
+    {% endblock js-block %} 
+</body>
+
+</html>

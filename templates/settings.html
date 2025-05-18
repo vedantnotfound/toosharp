@@ -1,0 +1,356 @@
+{% extends 'base.html'%}
+{% load static %}
+
+{% block title %}Upcoming Tasks{% endblock title %}
+
+{% block main-content %}
+    <!-- Content -->
+    <section id="content" class="w-full xl:w-[82%] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+        <!-- Topbar -->
+        <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+            <!-- Full Screen Width -->
+            <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+            </div> -->
+            <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+            </div>
+            <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                <span id="datePart" class="text-[14px]"></span>
+                <span id="weekdayPart" class="text-[14px]"></span>
+                <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+            </p>
+        </div>
+        <!-- Box Content -->
+
+        <div class="w-full pt-[100px] px-[20px] md:px-[50px] xl:px-[100px]">
+            <div class="mb-[30px] flex items-center justify-between">
+                <h1 class="text-[1.5rem] blueColor">Settings</h1>
+                <!-- Logout -->
+                <a href="{% url 'logout' %}"
+                class="w-fit md:hidden h-[40px] rounded-lg cursor-pointer flex items-center gap-[15px] border border-red-500 px-[20px] ">
+                <i class="fi fi-rr-sign-out-alt text-red-500 relative top-[2px]"></i>
+                <p class="text-red-600 text-[14px]">Logout</p>
+            </a>
+            </div>
+            <div class="w-full flex items-start gap-[50px]">
+                <div class="w-[300px] hidden md:flex flex-col gap-[10px] bg-white border p-[10px] rounded-lg">
+                    <div class="px-[20px] h-[40px] blueBg cursor-pointer flex items-center rounded-lg">
+                        <p class="text-[14px] text-white">General Settings</p>
+                    </div>
+                    <!-- Logout -->
+                    <a href="{% url 'logout' %}"
+                        class="w-full h-[40px] rounded-lg cursor-pointer flex items-center gap-[15px] border border-red-500 px-[20px] ">
+                        <i class="fi fi-rr-sign-out-alt text-red-500 relative top-[2px]"></i>
+                        <p class="text-red-600 text-[14px]">Logout</p>
+                    </a>
+             
+                </div>
+                <div class=" w-full">
+                    {% for message in messages %}
+                        {% if 'profile_update' in message.tags %}
+                        <div class="alert text-white bg-green-600 p-[15px] poppins my-[20px] inline-block text-[15px]">
+                            {{ message }}<br>
+                        </div>                        
+                        {% endif %}
+                    {% endfor %}
+                    <div class="w-full">
+                        <h3 class="underline underline-offset-4 blueColor mb-[20px]">Photo</h3>
+                        <div class="w-full flex flex-wrap items-center gap-[30px]">
+                            <div class="w-[100px] h-[100px]">
+                                <div class="w-[100px] h-[100px] rounded-full overflow-hidden">
+                                    <img src="{% if request.user.employee.profile_photo %}{{ request.user.employee.profile_photo.url }}{% else %}/static/img/default-profile.jpg{% endif %}" 
+                                         class="w-full h-full object-cover object-top" alt="Profile Photo">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-[15px]">
+                                <form action="{% url 'update_profile' %}" method="post" class="flex items-center flex-wrap gap-[15px]" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <button type="button" class="flex items-center gap-[15px] h-[40px] hover:bg-slate-100 w-fit px-[20px] border rounded-lg">
+                                      <label for="changeImg" class="text-[13px] poppins flex items-center gap-[10px] text-nowrap h-[40px] cursor-pointer">
+                                        <i class="fi fi-rr-edit relative top-[2px] text-[#727272]"></i> Change photo
+                                      </label>
+                                      <input type="file" id="changeImg" name="profile_photo" hidden onchange="submitProfileForm()">
+                                    </button>
+                                  
+                                    <button type="submit" class="hidden" id="submitPhoto"></button>
+                                  
+                                   
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-[30px]">
+                    <div>
+                        <h3 class="underline underline-offset-4 blueColor mb-[20px]">Name</h3>
+                        <div class="w-full flex items-center gap-[30px]">
+                            <form action="{% url 'update_profile' %}" method="post">
+                                {% csrf_token %}
+                                <div class="flex items-center flex-wrap gap-[15px] w-full">
+                                    <div class="flex items-center gap-[15px] h-[40px] hover:bg-slate-100 w-fit px-[20px] border rounded-lg">
+                                        <i class="fi fi-rr-id-card-clip-alt relative top-[2px] text-[#454545]"></i>
+                                        <input id="nameInput" type="text" name="full_name" required value="{{ request.user.employee.full_name }}"
+                                            class="bg-transparent poppins focus:outline-none placeholder:text-[14px] text-[14px]">
+                                    </div>
+                                    <div class="flex items-center gap-[20px]">
+                                        <button type="submit" class="flex items-center gap-[15px] h-[40px] w-fit px-[20px] border border-green-700 hover:bg-green-700 transition duration-[0.3s] group rounded-lg">
+                                            <i class="fi fi-rr-edit relative top-[2px] text-green-700 group-hover:text-white"></i>
+                                            <p class="text-[13px] text-green-700  group-hover:text-white">Save</p>
+                                        </button>
+                                       
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- <hr class="my-[30px]"> -->
+                    <!-- Email -->
+                    <!-- <div class="w-full">
+                        <h3 class="underline underline-offset-4 blueColor mb-[20px]">Email</h3>
+                        <div class="w-full flex items-center gap-[30px]">
+
+                            <div class="w-full flex items-center gap-[15px]">
+                                <form action="" class="w-full flex items-center gap-[20px]">
+                                    <div
+                                        class="flex items-center gap-[15px] h-[40px] hover:bg-slate-100 w-[60%] px-[20px] border rounded-lg">
+                                        <i class="fi fi-rr-envelope relative top-[2px] text-[#454545]"></i>
+                                        <input id="emailInput" type="text" readonly
+                                            placeholder="works.vedantyengupatla@gmail.com"
+                                            class="bg-transparent poppins w-full focus:outline-none placeholder:text-[14px] text-[14px]">
+                                    </div>
+
+                                    <div class="flex items-center gap-[20px]">
+
+                                        <button type="submit" id="saveEmail"
+                                            class="flex items-center gap-[15px] h-[40px] w-fit px-[20px] border border-green-700 hover:bg-green-700 transition duration-[0.3s] group rounded-lg">
+                                            <i
+                                                class="fi fi-rr-edit relative top-[2px] text-green-700 group-hover:text-white"></i>
+                                            <p class="text-[13px] text-green-700  group-hover:text-white">Edit</p>
+                                        </button>
+                                        <button type="button" id="emailCancel"
+                                            class="flex hidden items-center gap-[15px] h-[40px] w-fit px-[20px] border border-red-500 hover:bg-red-500 transition duration-[0.3s] group rounded-lg">
+                                            <i
+                                                class="fi fi-rr-cross relative top-[2px] text-[13px] text-red-500 group-hover:text-white"></i>
+                                            <p class="text-[13px] text-red-500  group-hover:text-white">Cancle</p>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div> -->
+                    <hr class="my-[30px]">
+                    <!-- Email -->
+                    <div class="w-full">
+                        <h3 class="underline underline-offset-4 blueColor mb-[20px]">Change password</h3>
+                    
+                        <button id="showForm" class="flex items-center gap-[15px] h-[40px] w-fit px-[20px] border rounded-lg">
+                            <i class="fi fi-rr-lock relative top-[2px]"></i>
+                            <p class="text-[13px] poppins" >Change Password</p>
+                        </button>
+                        
+                        <!-- Password Change Form -->
+                        <form id="changePassForm" action="{% url 'change_password' %}" method="post" class="hidden p-[20px] flex flex-col gap-[20px] rounded-lg border w-full  md:w-[70%] my-[20px]">
+                            {% csrf_token %}
+                            <div class="w-[100%] flex items-center justify-between h-[40px] border-b focus-within:border-b-[2px] focus-within:border-blue-800">
+                                <input type="password" class="poppins w-full h-full focus:outline-none text-[14px] placeholder:text-[14px]" id="oldPass" name="old_password" placeholder="Enter your old password" required>
+                                <i id="showOldPass" class="fi fi-rr-eye-crossed cursor-pointer"></i>
+                            </div>
+                    
+                            <div class="w-[100%] flex items-center justify-between h-[40px] border-b focus-within:border-b-[2px] focus-within:border-blue-800">
+                                <input type="password" class="poppins w-full h-full focus:outline-none text-[14px] placeholder:text-[14px]" id="newPass" name="new_password" placeholder="Enter your new password" required>
+                                <i id="showNewPass" class="fi fi-rr-eye-crossed cursor-pointer"></i>
+                            </div>
+                    
+                            <div class="w-[100%] flex items-center justify-between h-[40px] border-b focus-within:border-b-[2px] focus-within:border-blue-800">
+                                <input type="password" class="poppins w-full h-full focus:outline-none text-[14px] placeholder:text-[14px]" id="confirmPass" name="confirm_password" placeholder="Enter your confirm password" required>
+                                <i id="showConfirmPass" class="fi fi-rr-eye-crossed cursor-pointer"></i>
+                            </div>
+                    
+                            <p id="changePassAlert" class="text-red-600 text-[13px] hidden">Passwords do not match!</p>
+                    
+                            <div class="w-full flex items-center flex-wrap gap-[10px] md:gap-[20px]">
+                                <button type="submit" class="poppins px-[20px] h-[40px] blueBg text-nowrap flex items-center gap-[15px] text-white text-[13px] rounded-lg">
+                                    <i class="fi fi-rr-check relative text-white top-[2px]"></i> Change password
+                                </button>
+                                <button id="closeForm" type="button" class="poppins flex text-nowrap items-center gap-[15px] px-[20px] h-[40px] text-[13px] border text-[#454545] rounded-lg hover:bg-slate-200 transition duration-[0.3s]">
+                                    <i class="fi fi-rr-cross relative top-[2px] text-[13px]"></i> Close
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main-content %}
+
+{% block js-block %}
+    <script>
+    // ---------------------------- Menu --------------------
+
+    function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+    //  ------------------------------ Onchange Image Submit -------------------------
+    function submitProfileForm() {
+        // Automatically submit the form when a file is selected
+        document.getElementById('submitPhoto').click();
+    }
+    // SHow and Hide Change password form and Validations also
+           document.addEventListener("DOMContentLoaded", () => {
+    const showFormButton = document.querySelector("#showForm");
+    const changePassForm = document.querySelector("#changePassForm");
+    const closeFormButton = document.querySelector("#closeForm");
+    const newPassInput = document.querySelector("#newPass");
+    const confirmPassInput = document.querySelector("#confirmPass");
+    const oldPassInput = document.querySelector("#oldPass");
+    const changePassAlert = document.querySelector("#changePassAlert");
+    const submitButton = changePassForm.querySelector("button[type='submit']");
+
+    const showOldPassButton = document.querySelector("#showOldPass");
+    const showNewPassButton = document.querySelector("#showNewPass");
+    const showConfirmPassButton = document.querySelector("#showConfirmPass");
+
+    // Show the form
+    showFormButton.addEventListener("click", () => {
+        changePassForm.classList.remove("hidden");
+    });
+
+    // Hide the form
+    closeFormButton.addEventListener("click", () => {
+        changePassForm.classList.add("hidden");
+        resetForm();
+    });
+
+    // Validate passwords
+    function validatePasswords() {
+        const newPassword = newPassInput.value.trim();
+        const confirmPassword = confirmPassInput.value.trim();
+
+        if (newPassword && confirmPassword) {
+            if (newPassword !== confirmPassword) {
+                changePassAlert.textContent = "Passwords do not match!";
+                changePassAlert.classList.remove("hidden");
+                submitButton.disabled = true;
+            } else {
+                changePassAlert.classList.add("hidden");
+                submitButton.disabled = false;
+            }
+        } else {
+            submitButton.disabled = true;
+        }
+    }
+
+    // Reset the form and alert
+    function resetForm() {
+        changePassForm.reset();
+        changePassAlert.classList.add("hidden");
+        submitButton.disabled = true;
+    }
+
+    // Toggle password visibility
+    function togglePasswordVisibility(inputField, toggleButton) {
+        toggleButton.addEventListener("click", () => {
+            const type = inputField.type === "password" ? "text" : "password";
+            inputField.type = type;
+            toggleButton.classList.toggle("fi-rr-eye");
+            toggleButton.classList.toggle("fi-rr-eye-crossed");
+        });
+    }
+
+    // Add event listeners for toggling passwords
+    togglePasswordVisibility(oldPassInput, showOldPassButton);
+    togglePasswordVisibility(newPassInput, showNewPassButton);
+    togglePasswordVisibility(confirmPassInput, showConfirmPassButton);
+
+    // Add input event listeners for validation
+    newPassInput.addEventListener("input", validatePasswords);
+    confirmPassInput.addEventListener("input", validatePasswords);
+
+    // Initialize submit button as disabled
+    submitButton.disabled = true;
+});
+
+
+        const nameInput = document.getElementById("nameInput");
+        const saveNameButton = document.getElementById("saveName");
+        const cancelButton = document.getElementById("cancel");
+
+        // ------------------------ Name Handle click on Edit/Update button --------------------
+        // saveNameButton.addEventListener("click", function () {
+        //     if (nameInput.hasAttribute("readonly")) {
+        //         // Enable editing
+        //         nameInput.removeAttribute("readonly");
+        //         nameInput.focus();
+        //         saveNameButton.querySelector("p").textContent = "Update"; // Change button text
+        //         saveNameButton.setAttribute("type", "button"); // Set type to button
+        //         cancelButton.classList.remove("hidden"); // Show cancel button
+        //     } else {
+        //         // Save changes
+        //         nameInput.setAttribute("readonly", true);
+        //         saveNameButton.querySelector("p").textContent = "Edit"; // Revert button text
+        //         saveNameButton.setAttribute("type", "submit"); // Change type to submit
+        //         cancelButton.classList.add("hidden"); // Hide cancel button
+        //     }
+        // });
+
+        // // Handle click on Cancel button
+        // cancelButton.addEventListener("click", function () {
+        //     nameInput.setAttribute("readonly", true);
+        //     saveNameButton.querySelector("p").textContent = "Edit"; // Revert button text
+        //     saveNameButton.setAttribute("type", "button"); // Reset type to button
+        //     cancelButton.classList.add("hidden"); // Hide cancel button
+        // });
+
+
+        // ---------------------------  For Email Tab --------------------------------
+
+        const emailInput = document.getElementById("emailInput");
+        const saveEmailButton = document.getElementById("saveEmail");
+        const emailCancelButton = document.getElementById("emailCancel");
+
+        // Handle click on Edit/Update button
+        saveEmailButton.addEventListener("click", function () {
+            if (emailInput.hasAttribute("readonly")) {
+                // Enable editing
+                emailInput.removeAttribute("readonly");
+                emailInput.focus();
+                saveEmailButton.querySelector("p").textContent = "Update"; // Change button text
+                saveEmailButton.setAttribute("type", "button"); // Set type to button while editing
+                emailCancelButton.classList.remove("hidden"); // Show cancel button
+            } else {
+                // Save changes
+                emailInput.setAttribute("readonly", true);
+                saveEmailButton.querySelector("p").textContent = "Edit"; // Revert button text
+                saveEmailButton.setAttribute("type", "submit"); // Change type to submit
+                emailCancelButton.classList.add("hidden"); // Hide cancel button
+            }
+        });
+
+        // Handle click on Cancel button
+        emailCancelButton.addEventListener("click", function () {
+            emailInput.setAttribute("readonly", true); // Make input readonly
+            saveEmailButton.querySelector("p").textContent = "Edit"; // Revert button text
+            saveEmailButton.setAttribute("type", "button"); // Reset type to button
+            emailCancelButton.classList.add("hidden"); // Hide cancel button
+        });
+
+        // ----------------------------- Hide and Show for Change password and Password match ---------------------
+     
+        
+
+    </script>
+{% endblock js-block %} 
+

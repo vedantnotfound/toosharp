@@ -1,0 +1,250 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Add members{% endblock title %}
+
+{% block main-content %}
+        
+        <!-- Content -->
+        <section id="content" class="w-full xl:w-[82%] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+            <!-- Topbar -->
+            <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+                <!-- Full Screen Width -->
+                <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                    <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+                </div> -->
+                <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                    <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+                </div>
+                <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                    <span id="datePart" class="text-[14px]"></span>
+                    <span id="weekdayPart" class="text-[14px]"></span>
+                    <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+                </p>
+            </div>
+            <!-- Box Content -->
+            <div class="w-full  pt-[100px]">
+               <div class="px-[20px] md:px-[50px] xl:px-[100px] flex w-full items-center justify-between">
+                    <h1 class="text-[1.5rem] blueColor">Add Members</h1>
+                    
+               </div>
+               {% if messages %}
+                <div class="alert-container px-[100px] mt-[30px]">
+                    {% for message in messages %}
+                        <div class="alert poppins text-red-600 underline-offset-4 underline {% if message.tags %} alert-{{ message.tags }} {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+               <hr class="my-[40px]">
+               <form action="{% url 'add_member' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="w-full px-[20px] md:px-[50px] xl:px-[100px]">
+                    <p class="underline underline-offset-4 blueColor text-[13px] pb-[20px]">Basic Information</p>
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 items-center gap-[20px]"> 
+                        <div class="w-full">
+                            <input type="text" name="full_name" placeholder="Enter your name" class="h-[40px] border rounded-lg placeholder:text-[14px] text-[14px] w-full px-[20px] poppins text-[#454545] focus:outline-blue-800">
+                        </div>
+                        <div class="w-full">
+                            <input type="tel" maxlength="10" name="mobile_number" placeholder="Enter your mobile number" class="h-[40px] border rounded-lg placeholder:text-[14px] text-[14px] w-full text-[#454545] px-[20px] poppins focus:outline-blue-800">
+                        </div>
+                        <div class="w-full">
+                            <input type="email" name="email" placeholder="Enter your email" class="h-[40px] border rounded-lg placeholder:text-[14px] text-[14px] w-full px-[20px] poppins text-[#454545] focus:outline-blue-800">
+                        </div>
+                        <div class="w-full h-[40px] border px-[20px] rounded-lg flex items-center ">
+                            <label for="profilePic" class="text-[14px] poppins text-[#9da4b0] cursor-pointer"> Upload member profile image</label>
+                            <input type="file" name="profile_photo" hidden id="profilePic" onchange="handleFileChange()" class="h-[40px] border rounded-lg placeholder:text-[14px] text-[14px] w-full px-[20px] poppins text-[#454545] focus:outline-blue-800">
+                        </div>
+                        <div class="w-full flex items-center focus-within:border-[2px] focus-within:border-blue-800 justify-center px-[20px] h-[40px] border rounded-lg">
+                            <select name="gender" class="text-[13px] h-full focus:outline-none text-[#9da4b0]  w-full poppins">
+                                <option value="None" selected disabled class="text-[13px] text-[#9da4b0]">
+                                    Select Gender
+                                </option>
+                                <option value="Male" class="text-[13px] text-[#454545]">
+                                    Male
+                                </option>
+                                <option value="Female"  class="text-[13px] text-[#454545]">
+                                    Female
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-[40px]">
+                <div class="px-[20px] md:px-[50px] xl:px-[100px]">
+                    <p class="underline underline-offset-4 blueColor text-[13px] pb-[20px]">Department Information</p>
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 items-center gap-[20px]">    
+                        <div class="w-full flex items-center justify-center focus-within:border-[2px] focus-within:border-blue-800 px-[20px] h-[40px] border rounded-lg">
+                            <select name="department" class="text-[13px] h-full  cursor-pointer  focus:outline-none text-[#9da4b0]  w-full poppins">
+                                <option value="None" selected disabled class="text-[13px] text-[#9da4b0]">
+                                    Select Department
+                                </option>
+                                {% for department in departments %}
+                                    <option value="{{ department.id }}" class="poppins text-[14px] text-[#454545]">
+                                        {{ department.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="w-full flex items-center justify-center focus-within:border-[2px] focus-within:border-blue-800 px-[20px] h-[40px] border rounded-lg">
+                            <select name="position" class="text-[13px]  h-full focus:outline-none text-[#9da4b0] cursor-pointer  w-full poppins">
+                                <option value="None" selected disabled class="text-[13px] text-[#9da4b0]">
+                                    Select Position
+                                </option>
+                                {% for position in positions %}
+                                    <option value="{{ position.id }}" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                        {{ position.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-[40px]">
+                <div class="px-[20px] md:px-[50px] xl:px-[100px]">
+                    <p class="underline underline-offset-4 blueColor text-[13px] pb-[20px]">Dashboard Permissions</p>
+                    <div class="w-full flex flex-col items-start gap-[10px]">    
+                        <div class="flex items-start sm:items-center gap-[20px]">
+                            <input type="checkbox" name="admin_access" id="adminAccess" class="h-[15px] w-[15px] accent-blue-800">
+                            <label for="adminAccess" class="poppins text-[14px] cursor-pointer text-[#454545]">Admin Dashboard Access</label>
+                        </div>
+                        <div class="flex  items-start sm:items-center gap-[20px]">
+                            <input type="checkbox" name="team_leader_access" id="teamLeaderAccess" class="h-[15px] w-[15px] accent-blue-800">
+                            <label for="teamLeaderAccess" class="poppins text-[14px] cursor-pointer text-[#454545]">Team Leader Dashboard Access</label>
+                        </div>
+                        <div class="flex  items-start sm:items-center gap-[20px]">
+                            <input type="checkbox" name="co_worker" id="fullAccess" class="h-[15px] w-[15px] accent-blue-800">
+                            <label for="fullAccess" class="poppins text-[14px] cursor-pointer text-[#454545]">Co-Worker Dashboard Access</label>
+                        </div>
+                        <div class="flex  items-start sm:items-center gap-[20px]">
+                            <input type="checkbox" name="membership_access" id="membershipOp" class="h-[15px] w-[15px] accent-blue-800">
+                            <label for="membershipOp" class="poppins text-[14px] cursor-pointer text-[#454545]">Only Membership Dashboard Access</label>
+                        </div>
+                        <div class="flex  items-start sm:items-center gap-[20px]">
+                            <input type="checkbox" name="department_access" id="deptOp" class="h-[15px] w-[15px] accent-blue-800">
+                            <label for="deptOp" class="poppins text-[14px] cursor-pointer text-[#454545]">Only Department Dashboard Access</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="flex blueBg mt-[40px] sm:mt-[50px] h-[40px] px-[20px] rounded-lg items-center gap-[10px]">
+                        <i class="fi fi-rr-add text-white"></i>
+                        <p class="text-[14px] text-white">Add Member</p>
+                    </button>
+                </div>
+                </form>
+            
+            </div>
+        </section>
+
+{% endblock main-content %}
+{% block js-block %}
+<script>
+     // ---------------------------- Menu --------------------
+
+     function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+    // ------------------------------ Validations and Image Upload Validations
+    function handleFileChange() {
+    const fileInput = document.getElementById("profilePic");
+    const fileLabel = document.getElementById("fileLabel");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      fileLabel.textContent = "Upload member profile image (Max: 5MB)";
+      return;
+    }
+
+    // Check file size validation (Max 5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please upload an image smaller than 5 MB.");
+      fileInput.value = ""; // Reset the input
+      fileLabel.textContent = "Upload member profile image (Max: 5MB)";
+    } else {
+      fileLabel.textContent = file.name; // Display selected file name
+    }
+  }
+
+  function validateForm() {
+    const fileInput = document.getElementById("profilePic");
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    
+    // Ensure at least one dashboard permission checkbox is checked
+    const isChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+    if (!isChecked) {
+      alert("Please select at least one dashboard access permission.");
+      return false;
+    }
+
+    // Ensure an image is selected and size validated
+    if (!fileInput.value) {
+      alert("Please upload a profile image.");
+      return false;
+    }
+
+    return true;
+  }
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector("form");
+        const fileInput = document.querySelector("#profilePic");
+        const fileLabel = fileInput.previousElementSibling;
+        const checkboxes = document.querySelectorAll("input[type='checkbox']");
+        const departmentSelect = form.querySelector("select[name='department']");
+        const positionSelect = form.querySelector("select[name='position']");
+    
+        fileInput.addEventListener("change", () => {
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : "Upload member profile image";
+            fileLabel.textContent = fileName;
+            fileLabel.style.color = fileName !== "Upload member profile image" ? "#454545" : "#9da4b0";
+        });
+    
+        form.addEventListener("submit", (e) => {
+            let isValid = true;
+            let errorMessage = "";
+    
+            // Check required fields
+            const requiredFields = [
+                { name: "full_name", message: "Please enter your full name." },
+                { name: "mobile_number", message: "Please enter a valid mobile number." },
+                { name: "email", message: "Please enter a valid email." },
+                { name: "gender", message: "Please select a gender.", select: true },
+                { name: "department", message: "Please select a department.", select: true },
+                { name: "position", message: "Please select a position.", select: true },
+            ];
+    
+            requiredFields.forEach((field) => {
+                const input = form.querySelector(field.select ? `select[name="${field.name}"]` : `input[name="${field.name}"]`);
+                if (input.value.trim() === "" || input.value === "None") {
+                    isValid = false;
+                    errorMessage += `${field.message}\n`;
+                }
+            });
+    
+            // Check at least one checkbox for Dashboard Access
+            const isAnyCheckboxChecked = Array.from(checkboxes).some((checkbox) => checkbox.checked);
+            if (!isAnyCheckboxChecked) {
+                isValid = false;
+                errorMessage += "Please select at least one dashboard access option.\n";
+            }
+    
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+            }
+        });
+    });
+    </script>
+    
+    
+{% endblock js-block %}

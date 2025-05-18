@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Upcoming Tasks{% endblock title %}
+
+{% block main-content %}
+    <!-- Content -->
+    <section id="content" class="w-full xl:w-[82%] h-full relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+        <!-- Topbar -->
+        <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+            <!-- Full Screen Width -->
+            <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+            </div> -->
+            <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+            </div>
+            <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                <span id="datePart" class="text-[14px]"></span>
+                <span id="weekdayPart" class="text-[14px]"></span>
+                <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+            </p>
+        </div>
+        
+
+        <!-- Box Content -->
+        <div class="w-full pt-[100px]">
+            <div class="px-[20px] md:px-[50px] xl:px-[100px] flex items-start justify-between flex-wrap gap-[20px]">
+                <h1 class="text-[1.5rem] text-[#454545] text-nowrap">Upcoming <span class="boldFont blueColor">Tasks</span></h1>
+                <!-- Search -->
+                <div class="w-full md:w-[400px] flex items-center gap-[15px] px-[20px] h-[40px] border rounded-lg">
+                    <i class="fi fi-rr-search relative text-[14px] top-[2px]"></i>
+                    <input type="search" onkeyup="filterTasks()" id="searchInput" placeholder="Search anything"
+                        class="bg-transparent poppins placeholder:poppins focus:outline-none w-full h-[40px] text-[14px] placeholder:text-[14px]">
+                </div>
+            </div>
+
+            <hr class="my-[40px]">
+
+            <!-- Table -->
+            {% if task %}
+                <div class="w-[100%] px-[20px] md:px-[50px] xl:px-[100px] overflow-hidden">
+                    <div class="w-full md:overflow-x-scroll md:rounded-lg thinScrollBar md:border">
+                        <!-- Attributes -->
+                        <div class="hidden md:flex items-center rounded-t-lg">
+                            <div class="px-[20px] border-r  flex items-center min-w-[180px] h-[50px]">
+                                <p class="text-[14px] font-medium">Date</p>
+                            </div>
+                            <div class="px-[20px] border-r flex items-center min-w-[400px] h-[50px]">
+                                <p class="text-[14px] font-medium">Task</p>
+                            </div>
+                            <div class="px-[20px] border-r flex items-center min-w-[150px] h-[50px]">
+                                <p class="text-[14px] font-medium">Priority</p>
+                            </div>
+                            <div class="px-[20px]  flex items-center min-w-[300px] h-[50px]">
+                                <p class="text-[14px] font-medium">Assign By</p>
+                            </div>
+                            <div class="px-[20px] border-l flex items-center min-w-[200px] h-[50px] sticky right-0 top-0 bg-white">
+                                <p class="text-[14px] font-medium">Action</p>
+                            </div>
+                        </div>
+                        <div id="taskContainer" class="w-full">
+                            <!-- Table Rows -->
+                            {% for task_item in task %}
+                                <!-- Mobile -->
+                                <div class="md:hidden w-full border-b py-[10px]">
+                                    <div class="flex items-center justify-between w-full">
+                                        <p class="text-[13px]">{{ task_item.date|date:"d M Y" }}</p>
+                                    
+                                    </div>
+                                    <div class="py-[10px]">
+                                        <div class="flex items-center justify-between w-full">
+                                            <p class="text-[17px] truncate" >{{ task_item.title }}</p>
+                                        </div>
+                                        <p class="truncate text-[14px]">{{ task_item.description }}</p>
+                                    </div>
+                                    <div class="py-[10px] flex flex-wrap items-center justify-between w-full">
+                                        <p class="text-[13px] underline underline-offset-4 blueColor">Asign By  - {{ task_item.assigned_by }}</p>
+                                        <div class="w-fit flex items-center gap-[10px]  pt-[15px]">
+                                            <p class="text-[13px] px-[20px] flex items-center justify-center h-[35px]  
+                                            {% if task_item.priority == 'High' %}  bg-red-500 bg-opacity-40 text-red-700 {% elif task_item.priority == 'Medium' %}  bg-yellow-200 text-yellow-700 {% else %} border-green-600 bg-green-500 bg-opacity-40 text-green-700 {% endif %}">
+                                            {{ task_item.priority }}
+                                            </p>
+                                            <form action="{% url 'update_task_status' task_item.id %}" method="post" class="min-w-[180px]  bg-white">
+                                                {% csrf_token %}
+                                                <div class="  flex items-center w-full  ">
+                                                    <div class="w-full px-[10px] 
+                                                    {% if task_item.status == 'Completed' %} bg-green-700 text-white border-green-700 bg-opacity-80
+                                                    {% elif task_item.status == 'Pending' %} bg-red-300 text-red-900 
+                                                    {% elif task_item.status == 'On Hold' %} bg-yellow-200 text-yellow-700  
+                                                    {% elif task_item.status == 'In Progress' %} bg-blue-600 text-blue-950  bg-opacity-40
+                                                    {% else %} bg-gray-300 text-black border-gray-300 bg-opacity-40 {% endif %}">
+                                                        <select name="status" class="w-full focus:outline-none bg-transparent h-[35px] poppins text-[13px]" onchange="this.form.submit()"> 
+                                                            <option value="Pending" {% if task_item.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="In Progress" {% if task_item.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                            <option value="On Hold" {% if task_item.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                                            <option value="Completed" {% if task_item.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Desktop -->
+                                <div class="hidden md:flex items-center template task-item border-t w-fit" data-date="{{ task_item.date|date:'d M Y'|lower }}" 
+                                    data-title="{{ task_item.title|lower }}" 
+                                    data-desc="{{ task_item.description|lower }}" 
+                                    data-employee="{{ task_item.employee.full_name|lower }}" 
+                                    data-priority="{{ task_item.priority|lower }}" 
+                                    data-status="{{ task_item.status|lower }}">
+                                    <!-- Date -->
+                                    <div class="px-[20px] border-r flex items-center min-w-[180px] h-[70px]">
+                                        <p class="text-[14px]">{{ task_item.date|date:"d M Y" }}</p>
+                                    </div>
+
+                                    <!-- Title and Description -->
+                                     <!-- Title and Description -->
+                                <div class="px-[20px] border-r flex items-start cursor-pointer min-w-[400px] task max-w-[400px] flex-col h-[70px] justify-center" data-date="{{ task_item.date|date:'d M Y'|lower }}" 
+                                data-title="{{ task_item.title|lower }}" 
+                                data-desc="{{ task_item.description|lower }}" 
+                                data-employee="{{ task_item.employee.full_name|lower }}" 
+                                data-priority="{{ task_item.priority|lower }}" 
+                                data-status="{{ task_item.status|lower }}"  title="Task Title: {{ task_item.title }} ------- Task Description: {{ task_item.description }}">
+                                    <p class="text-[14px] font-medium" title="{{ task_item.title }}">{{ task_item.title }}</p> <!-- Task Title -->
+                                    <p class="truncate text-[14px] w-full" title="{{ task_item.description }}">{{ task_item.description }}</p> <!-- Task Description -->
+                                </div>
+                                   
+
+                                    <!-- Priority -->
+                                    <div class="px-[20px] border-r flex items-center min-w-[150px] h-[70px]">
+                                        <p class="text-[13px] px-[20px] w-full flex items-center justify-center h-[35px]  
+                                            {% if task_item.priority == 'High' %}  bg-red-500 bg-opacity-40 text-red-700 {% elif task_item.priority == 'Medium' %}  bg-yellow-200 text-yellow-700 {% else %} border-green-600 bg-green-500 bg-opacity-40 text-green-700 {% endif %}">
+                                            {{ task_item.priority }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Assigned Employee -->
+                                    <div class="px-[20px]  flex items-center min-w-[300px] h-[70px]">
+                                        <p class="text-[14px] capitalize">{{ task_item.assigned_by }}</p>
+                                    </div>
+
+                                    <!-- Status Button -->
+                                    <form action="{% url 'update_task_status' task_item.id %}" method="post" class="min-w-[200px] sticky right-0 top-0 bg-white">
+                                        {% csrf_token %}
+                                        <div class="px-[20px] border-l flex items-center w-full h-[70px] ">
+                                            <div class="w-full px-[10px] 
+                                            {% if task_item.status == 'Completed' %} bg-green-700 text-white border-green-700 bg-opacity-80
+                                            {% elif task_item.status == 'Pending' %} bg-red-300 text-red-900 
+                                            {% elif task_item.status == 'On Hold' %} bg-yellow-200 text-yellow-700  
+                                            {% elif task_item.status == 'In Progress' %} bg-blue-600 text-blue-950  bg-opacity-40
+                                            {% else %} bg-gray-300 text-black border-gray-300 bg-opacity-40 {% endif %}">
+                                                <select name="status" class="w-full focus:outline-none bg-transparent h-[35px] poppins text-[13px]" onchange="this.form.submit()"> 
+                                                    <option value="Pending" {% if task_item.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                    <option value="In Progress" {% if task_item.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                    <option value="On Hold" {% if task_item.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                                    <option value="Completed" {% if task_item.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            
+                            {% endfor %}
+                        </div>
+                    </div>
+                     <!-- Pagination -->
+                     <div class="w-full mt-[40px]">
+                        <div class="w-full flex items-center justify-center gap-[30px]">
+                            {% if task.has_previous %}
+                            <div class="w-fit flex items-center gap-[10px]">
+                                <a href="?page=1">
+                                    <div title="First" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                        <i class="fi fi-rr-angle-double-left text-[14px] relative top-[2px]"></i>
+                                    </div>
+                                </a>
+                                <a href="?page={{ task.previous_page_number }}" title="Previous">
+                                    <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                        <i class="fi fi-rr-angle-left text-[14px] relative top-[2px]"></i>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endif %}
+                    
+                            <span class=" text-[13px] font-normal poppins">
+                                Page {{ task.number }} of {{ task.paginator.num_pages }}.
+                            </span>
+                    
+                            {% if task.has_next %}
+                                <div class="w-fit flex items-center gap-[10px]">
+                                    <a href="?page={{ task.next_page_number }}" title="Next">
+                                        <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                            <i class="fi fi-rr-angle-right text-[14px] relative top-[2px]"></i>
+                                        </div>
+                                    </a>
+                                    <a href="?page={{ task.paginator.num_pages }}">
+                                        <div title="Last" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                            <i class="fi fi-rr-angle-double-right text-[14px] relative top-[2px]"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+            <div class="w-full flex items-center justify-center flex-col gap-[15px]">
+                <img src="/static/img/waiting.png" class="w-[200px]" alt="">
+                <p>No Upcoming tasks available.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    <div id="popupOverlayTask" class="hidden w-full fixed top-0 bottom-0 left-0 right-0 h-screen bg-blue-950 bg-opacity-50 z-[100]"></div>
+        <section class="hidden w-full flex items-center justify-center fixed top-0 bottom-0 left-0 right-0 z-[101] " id="taskPopupContainer" >
+            <div  class="w-[50%] min-h-[10%] max-h-[90%] overflow-y-scroll bg-white border-[2px] rounded-[10px] hideScrollbar p-[40px]">
+                <div class="w-full flex items-center justify-between">
+                    <h1 class="text-blue-900 text-[1.3rem]">Task Information</h1>
+                    <div id="closeTaskPopupBtn" class="w-[40px] cursor-pointer h-[40px] bg-slate-200 rounded-lg flex items-center justify-center">
+                        <i class="fi fi-rr-cross relative top-[2px]"></i>
+                    </div>
+                </div>
+                <div class="w-full mt-[20px]">
+                    <div class="w-full border rounded-lg flex flex-col gap-[15px] p-[20px]">
+                        <div class="w-full flex items-start flex-col gap-[5px]">
+                            <h1 id="popupTaskTitle" class="poppins font-medium ">Hello</h1>
+                            <p id="popupTaskDescription">Test</p>
+                        </div>
+                        <div>
+                            <p id="popupAssignedBy" class="text-[12px] underline underline-offset-4 text-blue-900">Assign By - Shubham Popale</p>
+                        </div>
+                        <div class="w-full flex items-center gap-[10px]">
+                            <div id="popupTaskPriority" class="w-fit h-[40px] text-[12px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                High 
+                            </div>
+                            <div id="popupTaskStatus" class="w-fit h-[40px] capitalize text-[12px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                Pending
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+{% endblock main-content %}
+
+{% block js-block %}
+<script>
+    // ---------------------------- Menu --------------------
+
+    function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+    // --------------------------------------- Filter Search Task ---------------------------------
+    function filterTasks() {
+        const searchInput = document.getElementById("searchInput").value.toLowerCase(); // Get search input
+        const tasks = document.querySelectorAll(".task-item"); // Get all tasks
+    
+        tasks.forEach((task) => {
+            // Retrieve all searchable data from custom attributes
+            const date = task.getAttribute("data-date");
+            const title = task.getAttribute("data-title");
+            const desc = task.getAttribute("data-desc");
+            const employee = task.getAttribute("data-employee");
+            const priority = task.getAttribute("data-priority");
+            const status = task.getAttribute("data-status");
+    
+            // Check if any data matches the search input
+            if (
+                date.includes(searchInput) ||
+                title.includes(searchInput) ||
+                desc.includes(searchInput) ||
+                employee.includes(searchInput) ||
+                priority.includes(searchInput) ||
+                status.includes(searchInput)
+            ) {
+                task.style.display = "flex"; // Show matching task
+            } else {
+                task.style.display = "none"; // Hide non-matching task
+            }
+        });
+    }
+
+    // -----------------------------------  Popup  -------------------------------
+    document.addEventListener("DOMContentLoaded", function () {
+                    const taskElements = document.querySelectorAll(".task");
+                    const popupOverlay = document.getElementById("popupOverlayTask");
+                    const taskPopup = document.getElementById("taskPopupContainer");
+                    const closeTaskPopup = document.getElementById("closeTaskPopupBtn");
+
+                    taskElements.forEach((taskElement) => {
+                        taskElement.addEventListener("click", function () {
+                            const task = {
+                                date: this.dataset.date || "No Date",
+                                title: this.dataset.title || "No Title",
+                                description: this.dataset.desc || "No Description",
+                                employee: this.dataset.employee || "Unknown",
+                                priority: this.dataset.priority || "Not Set",
+                                status: this.dataset.status || "Pending",
+                            };
+
+                            document.getElementById("popupTaskTitle").textContent = task.title;
+                            document.getElementById("popupTaskDescription").textContent = task.description;
+                            document.getElementById("popupAssignedBy").textContent = `Assigned To: ${task.employee}`;
+                            
+                            const taskPriority = document.getElementById("popupTaskPriority");
+                            const taskStatus = document.getElementById("popupTaskStatus");
+
+                            // Set Priority Styles
+                            taskPriority.textContent = task.priority;
+                            taskPriority.className = "px-3 py-1 rounded-md text-sm";
+                            switch (task.priority) {
+                                case "high":
+                                    taskPriority.classList.add("bg-red-500", "bg-opacity-40", "text-red-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "medium":
+                                    taskPriority.classList.add("bg-yellow-200", "text-yellow-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                default:
+                                    taskPriority.classList.add("border-green-600", "bg-green-500", "bg-opacity-40", "text-green-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                            }
+
+                            // Set Status Styles
+                            taskStatus.textContent = task.status;
+                            taskStatus.className = "px-3 py-1 rounded-md text-sm";
+                            switch (task.status) {
+                                case "completed":
+                                    taskStatus.classList.add("bg-green-700", "text-white", "border-green-700", "bg-opacity-80","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "pending":
+                                    taskStatus.classList.add("bg-red-300", "text-red-900","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "on Hold":
+                                    taskStatus.classList.add("bg-yellow-200", "text-yellow-700" ,"w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "in Progress":
+                                    taskStatus.classList.add("bg-blue-600", "text-blue-950", "bg-opacity-40","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                default:
+                                    taskStatus.classList.add("bg-gray-300", "text-black", "border-gray-300", "bg-opacity-40","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                            }
+
+                            // Show the popup
+                            popupOverlay.classList.remove("hidden");
+                            taskPopup.classList.remove("hidden");
+                        });
+                    });
+
+                    // Close popup on clicking close button or overlay
+                    closeTaskPopup.addEventListener("click", closeTaskPopupHandler);
+                    popupOverlay.addEventListener("click", closeTaskPopupHandler);
+
+                    function closeTaskPopupHandler() {
+                        popupOverlay.classList.add("hidden");
+                        taskPopup.classList.add("hidden");
+                    }
+                });
+
+</script>
+{% endblock js-block %}

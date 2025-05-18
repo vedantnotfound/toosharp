@@ -1,0 +1,146 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Upcoming Tasks{% endblock title %}
+
+{% block main-content %}
+
+    
+    <section id="content" class="w-full xl:w-[82%] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+        <!-- TopBar -->
+        <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+            <!-- Full Screen Width -->
+            <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+            </div> -->
+            <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+            </div>
+            <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                <span id="datePart" class="text-[14px]"></span>
+                <span id="weekdayPart" class="text-[14px]"></span>
+                <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+            </p>
+        </div>
+        
+        <!-- Box Content -->
+        <div class="w-full  pt-[100px]">
+            <div class="w-full flex items-center flex-wrap gap-[10px] justify-between px-[20px] md:px-[50px] xl:px-[100px]" >
+                <h1 class="text-[1.5rem] blueColor text-nowrap">Notifications</h1>
+
+                <!-- Mark All as Read Button -->
+                <button id="markAsRead" onclick="markAsRead()" type="submit" class="blueBg text-nowrap text-[13px] poppins text-white px-[20px] h-[40px]  rounded-lg ">
+                    Mark All as Read
+                </button>
+            
+            </div>
+    
+            <!-- Notifications Section -->
+            <div class="px-[20px] md:px-[50px] xl:px-[100px] w-full flex flex-col gap-[10px] py-[50px]">
+                {% if page_obj %}
+                    {% for notification in page_obj %}
+                        <div class="bg-white border p-[15px] rounded-lg gap-[15px] md:gap-[100px] flex flex-col md:flex-row items-center justify-between">
+                            <div class="flex flex-col gap-[10px]">
+                                <p class="text-[14px] poppins">{{ notification.message }}</p>
+                                <p class="text-gray-600 text-[12px]">{{ notification.created_at|date:"F j, Y, g:i a" }}</p>
+                            </div>
+                            <div class="w-full md:w-fit flex items-center justify-start ">
+                                <span class="text-sm text-gray-500"></span>
+    
+                                <!-- Mark as Read Button for Individual Notification -->
+                                {% if not notification.is_read %}
+                                    <form method="POST" action="{% url 'mark_notification_read' notification.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="border bg-slate-50 hover:bg-slate-200 poppins text-nowrap  h-[40px] px-[20px] rounded-lg text-[13px]">
+                                            Mark as Read
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-sm text-green-500">Read</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-600">You have no notifications at the moment.</p>
+                {% endif %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% endif %}
+                
+                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="alertSection" class="w-full h-[100vh] bg-blue-950 bg-opacity-50 fixed top-0  bottom-0 left-0 translate-y-[150%] right-0 z-[100]  flex items-center justify-center">
+       <form method="POST" id="alertForm" action="{% url 'mark_all_notifications_read' %}" class="p-[25px] sm:p-[40px] m-[30px] opacity-0 bg-white  rounded-lg flex  flex-col gap-[20px] items-center justify-center">
+            {% csrf_token %} 
+            <div class="h-[60px] w-[60px] bg-slate-200 rounded-full flex items-center justify-center">
+                <i class="fi fi-rr-triangle-warning text-blue-900 text-[25px] relative top-[3px]"></i>
+            </div>  
+            <h1 class="text-[1.2rem] text-center">Are you sure? <br> your want to clear all notifications</h1>
+            <div class="w-full flex items-center gap-[20px]">
+                <button type="submit" class="px-[20px] h-[40px] blueBg rounded-lg poppins text-[13px] w-full text-white"> Yes</button>
+                <button type="button" onclick="closeAlert()" class=" border rounded-lg px-[20px] w-full h-[40px]  poppins text-[13px]">Close</button>
+            </div>
+       </form>
+    </section>
+{% endblock main-content %}
+
+{% block js-block %}
+        <script>
+            // ---------------------------- Menu --------------------
+
+                function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+            // --------------------------------------- Show Alter All Clear notifications ---------------------------------
+            function markAsRead() {
+                let alertSection = document.getElementById("alertSection");
+                gsap.to(alertSection,{
+                    y:0,
+                    duration:0.5,
+                })
+                gsap.to('#alertForm',{
+                    opacity:1,
+                    duration:0.3,
+                    delay:0.5,
+                })
+            }
+            function closeAlert(){
+                let alertSection = document.getElementById("alertSection");
+                gsap.to(alertSection,{
+                    transform:"translateY(150%)",
+                    duration:0.5,
+                    delay:0.3 ,
+                })
+                gsap.to('#alertForm',{
+                    opacity:0,
+                    duration:0.3,
+                    
+                })
+            }
+        </script>
+        {% endblock js-block %} 
+

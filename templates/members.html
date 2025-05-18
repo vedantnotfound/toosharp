@@ -1,0 +1,273 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Members{% endblock title %}
+
+{% block main-content %}
+    <!-- Content -->
+    <section id="content" class="w-full xl:w-[82%] h-full  relative left-0 xl:left-[18%] overflow-y-scroll pb-[100px]">
+        <!-- Topbar -->
+        <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+            <!-- Full Screen Width -->
+            <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+            </div> -->
+            <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+            </div>
+            <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                <span id="datePart" class="text-[14px]"></span>
+                <span id="weekdayPart" class="text-[14px]"></span>
+                <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+            </p>
+        </div>
+        <!-- Box Content -->
+        <div class="w-full  pt-[100px]">
+            <div class="px-[20px] md:px-[50px] xl:px-[100px] flex w-full items-center flex-col gap-[20px] justify-between">
+                <div class="w-full flex items-center justify-between ">
+                    <h1 class="text-[1.5rem] blueColor">Members</h1>
+                    <a href="{% url 'add_member' %}">
+                        <button type="button" class="flex blueBg h-[40px] px-[20px] rounded-lg items-center gap-[10px]">
+                            <i class="fi fi-rr-add text-white relative top-[2px]"></i>
+                            <p class="text-[14px] text-white">Add Members</p>
+                        </button>
+                    </a>
+                </div>
+                <div class="w-fit hidden flex items-center gap-[20px]">
+                    <!-- Search -->
+                    <div class="w-[400px] flex items-center gap-[15px] px-[20px] h-[40px] border rounded-lg">
+                        <i class="fi fi-rr-search relative text-[14px] top-[2px]"></i>
+                        <input 
+                            type="search" 
+                            id="searchEmployee2" 
+                            placeholder="Search by name, department, or position" 
+                            class="bg-transparent poppins placeholder:poppins focus:outline-none w-full h-[40px] text-[14px] placeholder:text-[14px]">
+                    </div>
+                    <a href="{% url 'add_member' %}">
+                    <button type="button" class="flex blueBg h-[40px] px-[20px] rounded-lg items-center gap-[10px]">
+                        <i class="fi fi-rr-add text-white relative top-[2px]"></i>
+                        <p class="text-[14px] text-white">Add Members</p>
+                    </button>
+                    </a>
+                </div>
+                <!-- Search -->
+                <div class="w-full flex items-center gap-[15px] px-[20px] h-[40px] border rounded-lg">
+                    <i class="fi fi-rr-search relative text-[14px] top-[2px]"></i>
+                    <input 
+                        type="search" 
+                        id="searchEmployee" 
+                        placeholder="Search by name, department, or position" 
+                        class="bg-transparent poppins placeholder:poppins focus:outline-none w-full h-[40px] text-[14px] placeholder:text-[14px]">
+                </div>
+            </div>
+            <hr class="mt-[30px] mb-[20px] md:my-[40px]">
+            <!-- Table -->
+            <div class="px-[20px] md:px-[50px] xl:px-[100px] ">
+                <div class="w-full overflow-hidden rounded-lg md:border"> 
+                    <!-- Attributes -->
+                    <div class="items-center hidden md:flex ">
+                        <div class="w-[40%] h-[50px] border-r rounded-tl-lg flex items-center poppins px-[20px] text-[14px] text-[#454545]">
+                            Name
+                        </div>
+                        <div class="w-[30%] h-[50px] border-r flex items-center poppins px-[20px] text-[14px] text-[#454545]">
+                            Department
+                        </div>
+                        <div class="w-[30%] h-[50px]  flex items-center poppins px-[20px] text-[14px] text-[#454545]">
+                            Designation
+                        </div>
+                        <!-- <div class="w-[15%] h-[50px] border flex rounded-tr-lg items-center poppins px-[20px] text-[14px] text-[#454545]">
+                            Assign
+                        </div> -->
+                    </div>
+                    <div class="empList ">
+                        <!-- Loop through the paginated employees -->
+                        {% for employee in page_obj %}
+                            <!-- Mobile -->
+                            <div class="w-full py-[20px] border-b md:hidden">
+                                
+                                <div class="w-[100%]   flex items-center poppins  gap-[10px] text-[14px] text-[#454545]">
+                                    <div class="cursor-pointer w-[35px] h-[35px]  bg-slate-200 rounded-full overflow-hidden">
+                                        {% if employee.profile_photo %}
+                                            <img src="{{ employee.profile_photo.url }}" class="w-full h-full object-cover object-top" alt="">
+                                        {% else %}
+                                            <img src="/static/img/default-profile.jpg" class="w-full h-full object-cover object-top" alt="">
+                                        {% endif %}
+                                    </div>
+                                    <p>{{ employee.full_name }}</p>
+                                </div>
+                                <div class="w-full flex items-center flex-wrap gap-[10px] py-[10px]">
+                                    <div class="w-fit flex items-center poppins  text-[14px] text-[#454545]">
+                                        {% if employee.department %}
+                                            <p class="px-[20px] py-[5px] border rounded-full">{{ employee.department.title }}</p>
+                                        {% else %}
+                                            <p class="px-[20px] py-[5px] border rounded-full">No Department</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="w-fit   flex items-center poppins  text-[14px] text-[#454545]">
+                                        {% if employee.position %}
+                                            <p class="px-[20px] py-[5px] border rounded-full">{{ employee.position.title }}</p>
+                                        {% else %}
+                                            <p class="px-[20px] py-[5px] border rounded-full">No Position</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                </div>
+                                <!-- <div class="w-[100%] pt-[10px] flex assignTask items-center poppins text-[14px] text-[#454545]">
+                                    <a href="{% url 'home' %}?showForm=true&selectedMember={{ employee.id }}" class="underline underline-offset-4 blueColor">Assign Task</a>
+                                </div> -->
+                            </div>
+                            <!-- Desktop Employee List -->
+                            <a href="{% url 'employee_detail' employee.id %}">
+                            <div 
+                                class="border-t items-center employee-item hidden md:flex" 
+                                data-name="{{ employee.full_name|lower }}" 
+                                data-department="{% if employee.department %}{{ employee.department.title|lower }}{% else %}no department{% endif %}" 
+                                data-position="{% if employee.position %}{{ employee.position.title|lower }}{% else %}no position{% endif %}">
+                                <div class="w-[40%] h-[50px] border-r memberName flex items-center poppins px-[20px] gap-[10px] text-[14px] text-[#454545]">
+                                    <div class="cursor-pointer w-[35px] h-[35px] bg-slate-200 rounded-full overflow-hidden">
+                                        {% if employee.profile_photo %}
+                                            <img src="{{ employee.profile_photo.url }}" class="w-full h-full object-cover object-top" alt="">
+                                        {% else %}
+                                            <img src="/static/img/default-profile.jpg" class="w-full h-full object-cover object-top" alt="">
+                                        {% endif %}
+                                    </div>
+    
+                                    <p>{{ employee.full_name }}</p>
+                                </div>
+                                <div class="w-[30%] h-[50px] border-r flex items-center poppins px-[20px] text-[14px] text-[#454545]">
+                                    {% if employee.department %}
+                                        <p class="px-[20px] py-[5px] border rounded-full">{{ employee.department.title }}</p>
+                                    {% else %}
+                                        <p class="px-[20px] py-[5px] border rounded-full">No Department</p>
+                                    {% endif %}
+                                </div>
+                                <div class="w-[30%] h-[50px]  empPosition flex items-center poppins px-[20px] text-[14px] text-[#454545]">
+                                    {% if employee.position %}
+                                        <p class="px-[20px] py-[5px] border rounded-full">{{ employee.position.title }}</p>
+                                    {% else %}
+                                        <p class="px-[20px] py-[5px] border rounded-full">No Position</p>
+                                    {% endif %}
+                                </div>
+                                <!-- <div class="w-[15%] h-[50px] border flex assignTask items-center poppins px-[20px] text-[14px] text-[#454545]">
+                                    <a href="{% url 'home' %}?showForm=true&selectedMember={{ employee.id }}" class="underline underline-offset-4 blueColor">Assign Task</a>
+                                </div> -->
+                            </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            
+            <!-- Pagination Controls -->
+            <!-- Pagination -->
+            <div class="w-full mt-[40px]">
+                <div class="w-full flex items-center justify-center gap-[30px]">
+                    {% if task.has_previous %}
+                    <div class="w-fit flex items-center gap-[10px]">
+                        <a href="?page=1">
+                            <div title="First" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                <i class="fi fi-rr-angle-double-left text-[14px] relative top-[2px]"></i>
+                            </div>
+                        </a>
+                        <a href="?page={{ task.previous_page_number }}" title="Previous">
+                            <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                <i class="fi fi-rr-angle-left text-[14px] relative top-[2px]"></i>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+            
+                    <span class=" text-[13px] font-normal poppins">
+                        Page {{ task.number }} of {{ task.paginator.num_pages }}.
+                    </span>
+            
+                    {% if task.has_next %}
+                        <div class="w-fit flex items-center gap-[10px]">
+                            <a href="?page={{ task.next_page_number }}" title="Next">
+                                <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                    <i class="fi fi-rr-angle-right text-[14px] relative top-[2px]"></i>
+                                </div>
+                            </a>
+                            <a href="?page={{ task.paginator.num_pages }}">
+                                <div title="Last" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                    <i class="fi fi-rr-angle-double-right text-[14px] relative top-[2px]"></i>
+                                </div>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main-content %}
+
+{% block js-block %}
+    <script>
+         // ---------------------------- Menu --------------------
+
+         function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+        // ---------------------------------------------- Filter Member ( Member Page Js ) -------------------------------
+        // Filter Employees Based on Search Input
+        function filterEmployees() {
+            const searchInput = document.getElementById('searchEmployee').value.toLowerCase(); // Get search input and convert to lowercase
+            const employeeItems = document.querySelectorAll('.employee-item'); // Select all employee items
+        
+            employeeItems.forEach((employee) => {
+                // Get data attributes for filtering
+                const name = employee.getAttribute('data-name');
+                const department = employee.getAttribute('data-department');
+                const position = employee.getAttribute('data-position');
+        
+                // Check if search input matches any of the data attributes
+                if (
+                    name.includes(searchInput) || 
+                    department.includes(searchInput) || 
+                    position.includes(searchInput)
+                ) {
+                    employee.style.display = 'flex'; // Show matching employee
+                } else {
+                    employee.style.display = 'none'; // Hide non-matching employee
+                }
+            });
+        }
+        // Add Event Listener for Search Input
+        document.getElementById('searchEmployee').addEventListener('keyup', filterEmployees);
+
+        function filterEmployees2() {
+            const searchInput = document.getElementById('searchEmployee2').value.toLowerCase(); // Get search input and convert to lowercase
+            const employeeItems = document.querySelectorAll('.employee-item'); // Select all employee items
+        
+            employeeItems.forEach((employee) => {
+                // Get data attributes for filtering
+                const name = employee.getAttribute('data-name');
+                const department = employee.getAttribute('data-department');
+                const position = employee.getAttribute('data-position');
+        
+                // Check if search input matches any of the data attributes
+                if (
+                    name.includes(searchInput) || 
+                    department.includes(searchInput) || 
+                    position.includes(searchInput)
+                ) {
+                    employee.style.display = 'flex'; // Show matching employee
+                } else {
+                    employee.style.display = 'none'; // Hide non-matching employee
+                }
+            });
+        }
+        // Add Event Listener for Search Input
+        document.getElementById('searchEmployee2').addEventListener('keyup', filterEmployees2);
+    </script>
+{% endblock js-block %} 

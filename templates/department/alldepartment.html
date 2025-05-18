@@ -1,0 +1,86 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Departments{% endblock title %}
+{% block main-content %}
+<!-- Content -->
+<section id="content" class="w-full xl:w-[82%] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+    <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+        <!-- Full Screen Width -->
+        <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+            <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+        </div> -->
+        <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+            <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+        </div>
+        <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+            <span id="datePart" class="text-[14px]"></span>
+            <span id="weekdayPart" class="text-[14px]"></span>
+            <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+        </p>
+    </div>
+    <!-- Box Content -->
+
+    <div class="w-full  pt-[100px]  ">
+        <div class="mb-[10px] md:mb-[30px] px-[20px] md:px-[50px] xl:px-[100px] flex-wrap gap-[20px] w-full flex items-center justify-between">
+            <h1 class="text-[1.5rem] blueColor">Department</h1>
+            <a href="{% url 'add_department' %}">
+                <button type="button" class="flex blueBg h-[40px] px-[20px] rounded-lg items-center gap-[10px]">
+                    <i class="fi fi-rr-add text-white"></i>
+                    <p class="text-[14px] text-white">Add Departnents</p>
+                </button>
+            </a>
+        </div>
+        <div class="w-full px-[20px] md:px-[50px] xl:px-[100px] py-[30px]">
+            {% for department in departments %}
+            <div class="w-full flex sm:flex-row flex-col gap-[20px] items-start justify-between border-t border-b py-[20px]">
+                <!-- Department Title and Employees -->
+                <div class="w-full flex flex-col gap-[10px] items-start">
+                    <h3 class="text-[1.3rem] sm:text-[1.5rem] blueColor">{{ department.title }}</h3>
+                    <div class="w-full flex items-center flex-wrap gap-[10px]">
+                        <!-- Display Team Head -->
+                        <p class="border rounded-full px-[20px] text-nowrap py-[5px] text-[13px]">
+                            Team Head - {{ department.team_head.full_name }} <!-- Adjust field name if needed -->
+                        </p>
+                        <!-- Display Team Leader -->
+                        <p class="border rounded-full px-[20px] text-nowrap py-[5px] text-[13px]">
+                            Team Leader - {{ department.team_leader.full_name }} <!-- Adjust field name if needed -->
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Team Count Section -->
+                <div class="flex items-center justify-center flex-row sm:flex-col gap-[10px]">
+                    <p class="text-nowrap">Team Count</p>
+                    <h3 class="text-[1.5rem] blueColor text-nowrap boldFont">
+                        {{ department.employee_count }}  <!-- Assuming Employee is related via department, you can count related employees -->
+                    </h3>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock main-content %}
+
+{% block js-block %}
+<script>
+    // ---------------------------- Menu --------------------
+
+    function menu(){
+        console.log("Clicked On Menu");
+        let sidebar = document.getElementById("sidebar");
+        sidebar.style.transform = "translateX(0px)";
+        let overlay = document.getElementById("overlay");
+        overlay.style.display = "block";
+    
+    }
+    function closeMenu(){
+        console.log("Clicked On close Menu");
+        let sidebar = document.getElementById("sidebar");
+        sidebar.style.transform = "translateX(-100%)";
+        let overlay = document.getElementById("overlay");
+        overlay.style.display = "none";
+    }
+</script>
+{% endblock js-block %}

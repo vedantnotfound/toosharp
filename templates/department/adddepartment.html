@@ -1,0 +1,101 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Add-Departments{% endblock title %}
+{% block main-content %}
+<!-- Content -->
+<section id="content" class="w-full xl:w-[82%] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+    <!-- TopBar -->
+    <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px] ">
+        <!-- Full Screen Width -->
+        <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+            <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+        </div> -->
+        <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+            <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+        </div>
+        <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+            <span id="datePart" class="text-[14px]"></span>
+            <span id="weekdayPart" class="text-[14px]"></span>
+            <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+        </p>
+    </div>
+    <!-- Box Content -->
+
+    <div class="w-full  pt-[100px]  ">
+        <div class="mb-[30px] px-[20px] md:px-[50px] xl:px-[100px] w-full flex items-center justify-between">
+            <h1 class="text-[1.5rem] blueColor">Add Department</h1>
+        </div>
+        <hr class="my-[40px]">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+        
+            <div class="px-[20px] md:px-[50px] xl:px-[100px]">
+                <div class="w-full grid grid-cols-1  sm:grid-cols-2 items-center gap-[20px]">
+                    <div class="w-full">
+                        <input type="text" name="dept_name" required autocomplete="off" placeholder="Enter department name"
+                            class="h-[40px] border rounded-lg placeholder:text-[14px] text-[14px] w-full px-[20px] poppins text-[#454545] focus:outline-blue-800">
+                    </div>
+        
+                    <div class="w-full flex items-center justify-center px-[20px] h-[40px] border rounded-lg">
+                        <select name="team_head" class="text-[13px]  cursor-pointer h-full focus:outline-none text-[#9da4b0]  w-full poppins">
+                            <option value="None" selected disabled class="text-[13px] text-[#9da4b0]">
+                                Select Department Team Head
+                            </option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}" class="text-[13px] capitalize text-[#454545]">
+                                    {{ employee.full_name }} <!-- Adjust according to your Employee model -->
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+        
+                    <div class="w-full flex items-center justify-center px-[20px] h-[40px] border rounded-lg">
+                        <select name="team_leader" class="text-[13px]  cursor-pointer h-full  focus:outline-none text-[#9da4b0]  w-full poppins">
+                            <option value="None" selected disabled class="text-[13px] text-[#9da4b0]">
+                                Select Department Team Leader
+                            </option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}" class="text-[13px] capitalize text-[#454545]">
+                                    {{ employee.full_name }} <!-- Adjust according to your Employee model -->
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        
+            <hr class="my-[40px]">
+            <div class="w-full px-[20px] md:px-[50px] xl:px-[100px]">
+                <button type="submit"
+                    class="flex blueBg mt-[50px] h-[40px] px-[20px] rounded-lg items-center gap-[10px]">
+                    <i class="fi fi-rr-add text-white"></i>
+                    <p class="text-[14px] text-white">Add Department</p>
+                </button>
+            </div>
+        </form>
+
+    </div>
+</section>
+{% endblock main-content %}
+
+{% block js-block %}
+<script>
+    // ---------------------------- Menu --------------------
+
+    function menu(){
+        console.log("Clicked On Menu");
+        let sidebar = document.getElementById("sidebar");
+        sidebar.style.transform = "translateX(0px)";
+        let overlay = document.getElementById("overlay");
+        overlay.style.display = "block";
+    
+    }
+    function closeMenu(){
+        console.log("Clicked On close Menu");
+        let sidebar = document.getElementById("sidebar");
+        sidebar.style.transform = "translateX(-100%)";
+        let overlay = document.getElementById("overlay");
+        overlay.style.display = "none";
+    }
+</script>
+{% endblock js-block %}

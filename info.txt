@@ -1,0 +1,12 @@
+Heading Font - NeueMachina
+Text Font - Poppins
+
+------------------------------------
+
+Design
+
+Sidebar Color Code - #F7F8FC
+Icons Bg - #B4BDD9
+Bg blue color - #001E79
+
+------------------------------------

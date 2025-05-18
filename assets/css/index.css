@@ -1,0 +1,134 @@
+/* CSS Reset */
+*{
+    padding: 0;
+    margin: 0;
+}
+
+/* Imported fonts */
+@font-face {
+    font-family: lightFont;
+    src: url(/static/font//NeueMachina-Light_gwWCZxVuQl.ttf);
+}
+@font-face {
+    font-family: regularFont;
+    src: url(/static/font/NeueMachina-Regular_DQCmjH1st.ttf);
+}
+@font-face {
+    font-family: boldFont;
+    src: url(/static/font/NeueMachina-Bold_WaMOsLX9Z9.ttf);
+}
+.lightFont{
+    font-family: lightFont;
+}
+.regularFont{
+    font-family: regularFont;
+}
+.boldFont{
+    font-family: boldFont;
+}
+.poppins{
+    font-family: "Poppins", serif;
+}
+h1,h2,h3,h4,h5,h6{
+    font-family: regularFont;
+}
+
+p,span,a,button,ul,li,input,input::placeholder,textarea,textarea::placeholder,option{
+    font-family: "Poppins", serif;
+    color: #454545;
+}
+button{
+    font-family: "Poppins", serif;
+    color: #454545;
+}
+
+.blueBg{
+    background: #001E79;
+}
+.blueColor{
+    color: #001E79;
+}
+.sidebarBg{
+    background: #F7F8FC;
+}
+.textColor{
+    color: #454545;
+}
+.activeTabBg{
+    background: #B4BDD9;   
+}
+
+/* CSS */
+
+body,html{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#content{
+    scrollbar-width:thin;
+}
+.thinScrollBar{
+    scrollbar-width:thin;
+    
+}
+
+.hideScrollbar::-webkit-scrollbar{
+    width: 0px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    margin: 0 5px;
+    padding: 5px 10px;
+    text-decoration: none;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+}
+
+.pagination .current {
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+
+/* Member Page CSS */
+
+/* .empList .employee-item:last-child .assignTask{
+    border-bottom-right-radius: 10px;
+    
+}
+
+.empList .employee-item:last-child .memberName{
+    border-bottom-left-radius: 10px;
+    
+} */
+
+
+
+/* Customizing the scrollbar thumb width for horizontal scrolling */
+/* Custom horizontal scrollbar */
+/* .thinScrollBar::-webkit-scrollbar {
+    height: 8px; 
+  }
+  
+  .thinScrollBar::-webkit-scrollbar-thumb {
+    background-color: #888; 
+    border-radius: 4px;
+    width: 4px; 
+  }
+  
+  .thinScrollBar::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+  
+  .thinScrollBar::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }
+   */

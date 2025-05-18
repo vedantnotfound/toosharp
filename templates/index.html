@@ -1,0 +1,1533 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Home{% endblock title %}
+
+{% block main-content %}
+
+        <!-- Content -->
+        <section id="content" class="w-full xl:w-[82%] transition duration-[0.3s] h-full  relative xl:left-[18%] overflow-y-scroll pb-[100px]">
+            <!-- Topbar -->
+            <div id="topBar" class="w-full xl:w-[82%] pl-[10px] pr-[20px]  bg-white xl:left-[18%] fixed top-0 h-[60px] z-10 flex items-center border-b justify-between xl:justify-end xl:pl-[20px] xl:pr-[50px] md:px-[50px]">
+                <!-- Full Screen Width -->
+                <!-- <div onclick="sidebarHideShow()" class="h-[35px]  w-[35px] border rounded-full flex items-center cursor-pointer hover:bg-slate-200 justify-center ">
+                    <i class="fi fi-rr-sidebar-flip relative top-[2px] text-[15px]"></i>
+                </div> -->
+                <div id="menu" onclick="menu()" class="xl:hidden w-[40px] h-[40px] hover:bg-slate-200 flex cursor-pointer rounded-full items-center justify-center">
+                    <i class="fi fi-rr-menu-burger text-[19px] relative top-[2px]"></i>
+                </div>
+                <p id="dateTimeDisplay" class="flex items-center gap-[10px]">
+                    <span id="datePart" class="text-[14px]"></span>
+                    <span id="weekdayPart" class="text-[14px]"></span>
+                    <span id="timePart" class="boldFont blueColor text-[14px]"></span>
+                </p>
+            </div>
+            
+            <!-- Box Content -->
+            <div  class="w-full  pt-[100px]">
+                <div class="px-[20px] lg:px-[100px] flex items-start flex-col lg:flex-row gap-[20px] justify-between">
+                    <div>
+                        <h1 class="text-[1.5rem] text-[#454545]">Good <span id="greeting" class="boldFont blueColor">Morning</span></h1>
+                        <p>{{request.user.employee.full_name}}</p>
+                    </div>
+                    <!-- Search -->
+                    <div class="w-full lg:w-[400px] flex items-center gap-[15px] px-[20px] h-[40px] border rounded-lg ">
+                        <i class="fi fi-rr-search relative text-[14px] top-[2px]"></i>
+                        <input type="search" onkeyup="filterTasks()" id="searchInput"  placeholder="Search anything" class="bg-transparent poppins placeholder:poppins focus:outline-none w-full h-[40px] text-[14px] placeholder:text-[14px]">
+                    </div>
+                </div>
+                <!-- All Notes -->
+                <div class="px-[20px] lg:px-[100px] pt-[30px]">
+                    {% if request.user.employee.admin_access or request.user.employee.team_leader_access or request.user.employee.full_access%}
+                    <!-- Add Task Btn tab -->
+                    <div class="addTaskBtn flex items-center gap-[15px] w-fit  cursor-pointer  h-[40px]">
+                        <div class="w-[25px] h-[25px] flex items-center justify-center blueBg rounded-full">
+                            <i class="fi fi-rr-plus text-white text-[11px] relative top-[1px]"></i>
+                        </div>
+                        <p class="text-[14px]">Add Task</p>
+                    </div>
+                    {% endif %}
+                    <!-- Form -->
+                      
+                    <div class="w-full border rounded-[10px] py-[20px] mb-[20px]  hidden" id="taskForm">
+                        <form method="POST" action="{% url 'add_task' %}"  class="">
+                            {% csrf_token %}
+                            <div class="px-[20px]">
+                                <!-- Title -->
+                                <input type="text" name="title" required
+                                    class="w-full text-[16px] poppins placeholder:text-[16px] font-medium text-[#454545] focus:outline-none placeholder:text-[#767676]"
+                                    placeholder="Company name">
+                                <!-- Description -->
+                                <textarea name="description" cols="5" rows="5" required
+                                    class="w-full poppins text-[14px] placeholder:text-[14px] min-h-11 text-[#454545] focus:outline-none placeholder:text-[#767676] my-[10px] box-border resize-y"
+                                    id="description" placeholder="Description"></textarea>
+                            </div>
+                            <input type="text" name="date" hidden id="storeDate">
+                            <div class="w-full flex flex-wrap items-center gap-[10px] lg:gap-[20px] px-[20px]">
+                                <!-- Button to Toggle Date Picker -->
+                                <button type="button" id="date-button" class="h-[40px] poppins text-[14px] text-[#454545] flex items-center gap-[10px] border rounded-[5px] px-[20px]">
+                                    <i class="fi fi-rr-calendar-day textColor text-[15px] relative top-[1px]"></i>
+                                    <p class="text-[14px]" id="date-label">Date</p>
+                                </button>
+                        
+
+                                <div class="px-[20px] h-[40px] w-fit text-[14px] border rounded-[6px]">
+                                    <select name="priority" id="priority-select" class="cursor-pointer text-[14px] poppins h-[38px] flex items-center justify-center focus:outline-none text-[#454545]">
+                                        <option value="" disabled selected class="poppins text-[#454545] text-[14px]">
+                                            Select Priority
+                                        </option>
+                                        <option value="High" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                            High
+                                        </option>
+                                        <option value="Low" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                            Low
+                                        </option>
+                                        <option value="Medium" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                            Medium
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <!-- Hidden Date Picker -->
+                            <div id="date-picker" class="absolute hidden bg-white border rounded-lg p-4 mt-2 mx-[20px] z-50">
+                                <!-- Today, Tomorrow, Next Week Buttons -->
+                                <div class="flex flex-col justify-between gap-[5px] mb-2">
+                                    <button type="button" id="today-button" class="text-[13px] poppins px-[20px] text-left rounded-[6px] border h-[35px] hover:bg-gray-100">Today</button>
+                                    <button type="button" id="tomorrow-button"
+                                        class="px-[20px] hover:bg-gray-100 text-left rounded-[6px] poppins border text-[13px] h-[35px]">Tomorrow</button>
+                                    <button type="button" id="next-week-button" class="px-[20px] text-left rounded-[6px] border h-[35px] text-[13px] hover:bg-gray-100 poppins">Next
+                                        Week</button>
+                                </div>
+                        
+                                <div class="flex justify-between items-center mb-2">
+                                    <button type="button" id="prev-month" class="text-gray-500 w-[30px] h-[30px] flex items-center justify-center bg-[#f4f4f4] rounded-[4px]">
+                                        <i class="fi fi-rr-angle-small-left relative top-[1px]"></i>
+                                    </button>
+                                    <span id="current-month" class="text-[16px] font-medium"></span>
+                                    <button type="button" id="next-month" class="text-gray-500 w-[30px] h-[30px] flex items-center justify-center bg-[#f4f4f4] rounded-[4px]">
+                                        <i class="fi fi-rr-angle-small-right relative top-[1px]"></i>
+                                    </button>
+                                </div>
+                        
+                                <!-- Weekdays -->
+                                <div class="grid grid-cols-7 gap-2 text-center mt-2">
+                                    <span class="font-medium text-[14px]">SU</span>
+                                    <span class="font-medium text-[14px]">MO</span>
+                                    <span class="font-medium text-[14px]">TU</span>
+                                    <span class="font-medium text-[14px]">WE</span>
+                                    <span class="font-medium text-[14px]">TH</span>
+                                    <span class="font-medium text-[14px]">FR</span>
+                                    <span class="font-medium text-[14px]">SA</span>
+                                </div>
+                        
+                                <!-- Calendar -->
+                                <div id="calendar" class="grid grid-cols-7 gap-2 mt-2">
+                                    <!-- Days will be populated dynamically -->
+                                </div>
+                            </div>
+                        
+                            <hr class="my-[20px]">
+                            <!-- Add Btn, Close & Select member  -->
+                            <div class="px-[20px] flex  items-center flex-wrap gap-[10px] justify-between">  
+                                <div class="px-[20px] w-full sm:w-fit text-[14px]  border rounded-[6px]">
+                                    <select name="member" id="member" class="cursor-pointer text-[14px] poppins h-[38px] flex items-center w-full justify-center focus:outline-none text-[#454545]">
+                                        <option value="None" disabled selected class="poppins cursor-pointer text-[#454545] text-[14px]">
+                                            Select member
+                                        </option>
+                                        {% for employee in employees %}
+                                            <option  value="{{ employee.id }}" class="poppins cursor-pointer text-[14px] text-[#454545] capitalize" {% if employee.id|stringformat:"s" == selected_member %}selected{% endif %}>
+                                                {{ employee.full_name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-[20px]">
+                                    <button id="closeTaskForm" type="button" class="h-[40px] hover:bg-gray-200 cursor-pointer px-[20px] flex items-center gap-[10px] border rounded-[6px] ">
+                                        <i class="fi fi-rr-cross text-[13px] relative top-[1px]"></i>
+                                        <p class="text-[13px]">Close</p>
+                                    </button>
+                                    <button type="submit" class="h-[40px] px-[20px] flex cursor-pointer items-center gap-[10px]  rounded-[6px] blueBg">
+                                        <i class="fi fi-rr-check text-white text-[13px] relative top-[1px]"></i>
+                                        <p class="text-[13px] text-white">Add</p>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <hr class="mt-[30px] mb-[20px] md:my-[40px]">
+                <!-- Table -->
+                {% if task %}
+                <div class="w-[100%] px-[20px] lg:px-[100px] overflow-hidden">
+                    <div class="w-full md:overflow-x-scroll thinScrollBar md:border rounded-lg">
+                        <!-- Attributes -->
+                        <div class=" md:flex items-center hidden">
+                            <div class="px-[20px] border-r flex items-center  min-w-[180px] h-[50px]">
+                                <p class="text-[14px] font-medium">Date</p>
+                            </div>
+                            <div class="px-[20px] border-r flex items-center min-w-[400px] h-[50px]">
+                                <p class="text-[14px] font-medium">Task</p>
+                            </div>
+                            <div class="px-[20px] border-r flex items-center min-w-[150px] h-[50px]">
+                                <p class="text-[14px] font-medium">Priority</p>
+                            </div>
+                            <div class="px-[20px]  flex items-center min-w-[300px] h-[50px]">
+                                <p class="text-[14px] font-medium">Assign By</p>
+                            </div>
+                            <div class="px-[20px] border-l flex items-center min-w-[200px] h-[50px] sticky right-0 top-0 bg-white">
+                                <p class="text-[14px] font-medium">Action</p>
+                            </div>
+                        </div>
+                        <div id="taskContainer">
+                            <!-- Table -->
+                            {% for task in task %}
+                            <!-- Mobile -->
+                            <div class="md:hidden w-full border-b py-[10px]">
+                                <div class="flex items-center justify-between w-full">
+                                    <p class="text-[13px]">{{ task.date|date:"d M Y" }}</p>
+                                   
+                                </div>
+                                <div class="py-[10px]">
+                                    <div class="flex items-center justify-between w-full">
+                                        <p class="text-[17px] truncate" >{{ task.title }}</p>
+                                    </div>
+                                    <p class="truncate text-[14px]">{{ task.description }}</p>
+                                </div>
+                                <div class="py-[10px] flex flex-wrap items-center justify-between w-full">
+                                    <p class="text-[13px] underline underline-offset-4 blueColor">Asign By  - {{ task.assigned_by }}</p>
+                                    <div class="w-fit flex items-center gap-[10px]  pt-[15px]">
+                                        <p class="text-[13px] px-[20px] flex items-center justify-center  h-[35px]  
+                                        {% if task.priority == 'High' %}  bg-red-500 bg-opacity-40 text-red-700 {% elif task.priority == 'Medium' %}  bg-yellow-200 text-yellow-700 {% else %} border-green-600 bg-green-500 bg-opacity-40 text-green-700 {% endif %}">
+                                        {{ task.priority }}
+                                        </p>
+                                        <form action="{% url 'update_task_status' task.id %}" method="post" class="min-w-[150px]  bg-white" >
+                                            {% csrf_token %}
+                                            <div class=" flex items-center w-full ">
+                                                <div class="w-full px-[10px] 
+                                                {% if task.status == 'Completed' %}
+                                                                bg-green-700 text-white border-green-700 bg-opacity-80
+                                                            {% elif task.status == 'Pending' %}
+                                                                bg-red-300 text-red-900 
+                                                            {% elif task.status == 'On Hold' %}
+                                                                bg-yellow-200 text-yellow-700  
+                                                            {% elif task.status == 'In Progress' %}
+                                                                bg-blue-600 text-blue-950  bg-opacity-40
+                                                            {% else %}
+                                                                bg-gray-300 text-black border-gray-300 bg-opacity-40
+                                                            {% endif %}">
+                                                    <select name="status" 
+                                                        class="w-full  focus:outline-none bg-transparent  h-[35px] poppins text-[13px] 
+                                                            "
+                                                        onchange="this.form.submit()"> 
+                                                        <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %} class="text-[14px]">Pending</option>
+                                                        <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %} class="text-[14px]">In Progress</option>
+                                                        <option value="On Hold" {% if task.status == 'On Hold' %}selected{% endif %} class="text-[14px]">On Hold</option>
+                                                        <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %} class="text-[14px]">Completed</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Desktop -->
+                            <div  class="hidden md:flex items-center template task-item border-t w-fit" data-date="{{ task.date|date:'d M Y'|lower }}" 
+                            data-title="{{ task.title|lower }}" 
+                            data-desc="{{ task.description|lower }}" 
+                            data-employee="{{ task.employee.full_name|lower }}" 
+                            data-priority="{{ task.priority|lower }}" 
+                            data-status="{{ task.status|lower }}">
+                                <!-- Date -->
+                                <div class="px-[20px] border-r flex items-center min-w-[180px] h-[70px]">
+                                    <p class="text-[14px]">{{ task.date|date:"d M Y" }}</p> <!-- Format the date -->
+                                </div>
+
+                                <!-- Title and Description -->
+                                <div class="px-[20px] border-r flex items-start cursor-pointer min-w-[400px] max-w-[400px] flex-col h-[70px] justify-center task" data-date="{{ task.date|date:'d M Y'|lower }}" 
+                                data-title="{{ task.title|lower }}" 
+                                data-desc="{{ task.description|lower }}" 
+                                data-employee="{{ task.employee.full_name|lower }}" 
+                                data-priority="{{ task.priority|lower }}" 
+                                data-status="{{ task.status|lower }}"  title="Task Title: {{ task.title }} ------- Task Description: {{ task.description }}">
+                                    <p class="text-[14px] font-medium" title="{{ task.title }}">{{ task.title }}</p> <!-- Task Title -->
+                                    <p class="truncate text-[14px] w-full" title="{{ task.description }}">{{ task.description }}</p> <!-- Task Description -->
+                                </div>
+
+                                <!-- Priority -->
+                                <div class="px-[20px] border-r flex items-center min-w-[150px] h-[70px]">
+                                    <p class="text-[13px] px-[20px] w-full flex items-center justify-center  h-[35px]  
+                                        {% if task.priority == 'High' %}  bg-red-500 bg-opacity-40 text-red-700 {% elif task.priority == 'Medium' %}  bg-yellow-200 text-yellow-700 {% else %} border-green-600 bg-green-500 bg-opacity-40 text-green-700 {% endif %}">
+                                        {{ task.priority }}
+                                    </p>
+                                </div>
+
+                                <!-- Assigned Employee -->
+                                <div class="px-[20px]   flex items-center min-w-[300px] h-[70px]">
+                                    <p class="text-[14px] capitalize">{{ task.assigned_by }}</p> <!-- Employee Name -->
+                                </div>
+
+                                <!-- Status Button -->
+                                <form action="{% url 'update_task_status' task.id %}" method="post" class="min-w-[200px] border-l sticky right-0 top-0 bg-white " >
+                                    {% csrf_token %}
+                                    <div class="px-[20px]  flex items-center w-full h-[70px] ">
+                                        <div class="w-full px-[10px] 
+                                        {% if task.status == 'Completed' %}
+                                                        bg-green-700 text-white border-green-700 bg-opacity-80
+                                                    {% elif task.status == 'Pending' %}
+                                                        bg-red-300 text-red-900 
+                                                    {% elif task.status == 'On Hold' %}
+                                                        bg-yellow-200 text-yellow-700  
+                                                    {% elif task.status == 'In Progress' %}
+                                                        bg-blue-600 text-blue-950  bg-opacity-40
+                                                    {% else %}
+                                                        bg-gray-300 text-black border-gray-300 bg-opacity-40
+                                                    {% endif %}">
+                                            <select name="status" 
+                                                class="w-full  focus:outline-none bg-transparent  h-[35px] poppins text-[13px] 
+                                                    "
+                                                onchange="this.form.submit()"> 
+                                                <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %} class="text-[14px]">Pending</option>
+                                                <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %} class="text-[14px]">In Progress</option>
+                                                <option value="On Hold" {% if task.status == 'On Hold' %}selected{% endif %} class="text-[14px]">On Hold</option>
+                                                <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %} class="text-[14px]">Completed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                                {% if request.user.employee.admin_access or request.user.employee.team_leader_access %}
+                                <div class="w-full flex items-center gap-[15px]">
+                                    <button data-task="{{ task.id }}"  onclick="forwardTask({ 
+                                        title: '{{ task.title }}',
+                                        description: '{{ task.description }}',
+                                        assigned_by: '{{ task.assigned_by }}',
+                                        priority: '{{ task.priority }}',
+                                        status: '{{ task.status }}' ,
+                                        task_id: '{{ task.id }}',
+                                        employee_id: '{% if task.employee %}{{ task.employee.id }}{% else %}null{% endif %}',
+                                    })" class="w-[35px] h-[35px] flex items-center bg-slate-100  justify-center" title="Forward" type="button">
+                                        <i class="fi fi-rr-share-square"></i>  
+                                    </button>
+                                    <!-- <div class="hidden md:flex items-center template task-item border-t w-fit" data-task="{{ task.id }}" onclick="forwardTask({ 
+                                        title: '{{ task.title }}',
+                                        description: '{{ task.description }}',
+                                        assigned_by: '{{ task.assigned_by }}',
+                                        priority: '{{ task.priority }}',
+                                        status: '{{ task.status }}' 
+                                    })"> -->
+                                    <button data-task="{{ task.id }}" onclick="editTask({ 
+                                        title: '{{ task.title }}',
+                                        description: '{{ task.description }}',
+                                        assigned_by: '{{ task.assigned_by }}',
+                                        priority: '{{ task.priority }}',
+                                        status: '{{ task.status }}' ,
+                                        task_id: '{{ task.id }}',
+                                        date:'{{ task.date|date:'d M Y' }}',
+                                    })" class="w-[35px] h-[35px]  flex items-center bg-slate-100  justify-center" title="Edit" type="button">
+                                     
+                                        <i class="fi fi-rr-pencil"></i> <p id="edit-task-id" hidden>{{ task.id }}</p>
+                                    </button>
+                                </div>
+                                {% endif %}
+
+                            </div>
+
+                       
+                        {% endfor %}
+                            
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="w-full mt-[40px]">
+                        <div class="w-full flex items-center justify-center gap-[30px]">
+                            {% if task.has_previous %}
+                            <div class="w-fit flex items-center gap-[10px]">
+                                <a href="?page=1">
+                                    <div title="First" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                        <i class="fi fi-rr-angle-double-left text-[14px] relative top-[2px]"></i>
+                                    </div>
+                                </a>
+                                <a href="?page={{ task.previous_page_number }}" title="Previous">
+                                    <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                        <i class="fi fi-rr-angle-left text-[14px] relative top-[2px]"></i>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endif %}
+                    
+                            <span class=" text-[13px] font-normal poppins">
+                                Page {{ task.number }} of {{ task.paginator.num_pages }}.
+                            </span>
+                    
+                            {% if task.has_next %}
+                                <div class="w-fit flex items-center gap-[10px]">
+                                    <a href="?page={{ task.next_page_number }}" title="Next">
+                                        <div class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                            <i class="fi fi-rr-angle-right text-[14px] relative top-[2px]"></i>
+                                        </div>
+                                    </a>
+                                    <a href="?page={{ task.paginator.num_pages }}">
+                                        <div title="Last" class="w-[35px] h-[35px] flex items-center justify-center bg-slate-100 rounded-lg">
+                                            <i class="fi fi-rr-angle-double-right text-[14px] relative top-[2px]"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="w-full flex items-center justify-center flex-col">
+                    <img src="/static/img/waiting.png" class="w-[200px]" alt="">
+                    <p>No tasks available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        <!-- Edit Task -->
+        <div id="editTaskOverlay" onclick="editTaskOverlay()" class="w-[100%] translate-y-[150%] h-[100vh] fixed bg-blue-950 opacity-50 top-0 left-0 bottom-0 right-0 z-[100]"></div>
+        <section id="editTaskSection" class="w-full h-[100vh] p-[50px] flex items-start translate-y-[150%] justify-center fixed top-0 left-0 right-0 bottom-0 z-[101]">
+            <div id class="w-[60%] border rounded-[10px] py-[20px] mb-[20px] bg-white  " id="editTaskForm">
+                <form id="editForm" action="" method="POST"  class=" " >
+                    {% csrf_token %}
+                    <div class="w-full flex items-start ">
+                        <div class="px-[20px] w-full">
+                            <!-- Title -->
+                            <input type="text" id="editTaskTitle" name="title" required
+                                class="w-full text-[16px] poppins placeholder:text-[16px] font-medium text-[#454545] focus:outline-none placeholder:text-[#767676]"
+                                placeholder="Enter your note title">
+                            <!-- Description -->
+                            <textarea name="description" id="editTaskDescription" cols="5" rows="5" required
+                                class="w-full poppins text-[14px] placeholder:text-[14px] min-h-11 text-[#454545] focus:outline-none placeholder:text-[#767676] my-[10px] box-border resize-y"
+                                id="description" placeholder="Description"></textarea>
+                        </div>
+
+                       
+                       
+                 
+                    </div>
+                   
+                        <input type="text" name="date" hidden id="editStoreDate">
+
+                  
+                    <hr class="my-[20px]">
+                    <div class="w-full flex flex-wrap items-center justify-between gap-[10px] lg:gap-[20px] px-[20px]">
+                        <div class="flex items-center gap-[20px]">
+                            <!-- Button to Toggle Date Picker -->
+                            <button type="button" id="edit-date-button" class="h-[40px] poppins text-[14px] text-[#454545] flex items-center gap-[10px] border rounded-[5px] px-[20px]" >
+                                <i class="fi fi-rr-calendar-day textColor text-[15px] relative top-[1px]"></i>
+                                <p class="text-[14px]" id="edit-date-label">Date</p>
+                            </button>
+                    
+    
+                            <div class="px-[20px] h-[40px] w-fit text-[14px] border rounded-[6px]">
+                                <select name="priority" id="eidt-priority-select" class="cursor-pointer text-[14px] poppins h-[38px] flex items-center justify-center focus:outline-none text-[#454545]">
+                                    <option value="" disabled selected class="poppins text-[#454545] text-[14px]">
+                                        Select Priority
+                                    </option>
+                                    <option value="High" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                        High
+                                    </option>
+                                    <option value="Low" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                        Low
+                                    </option>
+                                    <option value="Medium" class="poppins cursor-pointer text-[14px] text-[#454545]">
+                                        Medium
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-[20px]">
+                            <button id="editCloseTaskForm" type="button" class="h-[40px] hover:bg-gray-200 cursor-pointer px-[20px] flex items-center gap-[10px] border rounded-[6px] ">
+                                <i class="fi fi-rr-cross text-[13px] relative top-[1px]"></i>
+                                <p class="text-[13px]">Close</p>
+                            </button>
+                            <button type="submit" class="h-[40px] px-[20px] flex cursor-pointer items-center gap-[10px]  rounded-[6px] blueBg">
+                                <i class="fi fi-rr-check text-white text-[13px] relative top-[1px]"></i>
+                                <p class="text-[13px] text-white">Edit</p>
+                            </button>
+                        </div>
+                    </div>
+                
+                    <!-- Hidden Date Picker -->
+                    <div id="edit-date-picker" class="absolute hidden bg-white border rounded-lg p-4 mt-2 mx-[20px] z-50">
+                        <!-- Today, Tomorrow, Next Week Buttons -->
+                        <div class="flex flex-col justify-between gap-[5px] mb-2">
+                            <button type="button" id="edit-today-button" class="text-[13px] poppins px-[20px] text-left rounded-[6px] border h-[35px] hover:bg-gray-100">Today</button>
+                            <button type="button" id="edit-tomorrow-button"
+                                class="px-[20px] hover:bg-gray-100 text-left rounded-[6px] poppins border text-[13px] h-[35px]">Tomorrow</button>
+                            <button type="button" id="edit-next-week-button" class="px-[20px] text-left rounded-[6px] border h-[35px] text-[13px] hover:bg-gray-100 poppins">Next
+                                Week</button>
+                        </div>
+                
+                        <div class="flex justify-between items-center mb-2">
+                            <button type="button" id="edit-prev-month" class="text-gray-500 w-[30px] h-[30px] flex items-center justify-center bg-[#f4f4f4] rounded-[4px]">
+                                <i class="fi fi-rr-angle-small-left relative top-[1px]"></i>
+                            </button>
+                            <span id="edit-current-month" class="text-[16px] font-medium"></span>
+                            <button type="button" id="edit-next-month" class="text-gray-500 w-[30px] h-[30px] flex items-center justify-center bg-[#f4f4f4] rounded-[4px]">
+                                <i class="fi fi-rr-angle-small-right relative top-[1px]"></i>
+                            </button>
+                        </div>
+                
+                        <!-- Weekdays -->
+                        <div class="grid grid-cols-7 gap-2 text-center mt-2">
+                            <span class="font-medium text-[14px]">SU</span>
+                            <span class="font-medium text-[14px]">MO</span>
+                            <span class="font-medium text-[14px]">TU</span>
+                            <span class="font-medium text-[14px]">WE</span>
+                            <span class="font-medium text-[14px]">TH</span>
+                            <span class="font-medium text-[14px]">FR</span>
+                            <span class="font-medium text-[14px]">SA</span>
+                        </div>
+                
+                        <!-- Calendar -->
+                        <div id="edit-calendar" class="grid grid-cols-7 gap-2 mt-2">
+                            <!-- Days will be populated dynamically -->
+                        </div>
+                    </div>
+                
+                </form>
+            </div>
+        </section>
+        <!-- Forward Task -->
+        <section id="forwardSection" class="w-full h-[100vh] hidden z-[100]  transition-all duration-500 fixed top-0 bottom-0 left-0 right-0 bg-blue-950 bg-opacity-50">
+            <div id="forwardFormMain" class=" w-[500px]  translate-x-[100%] transition-all duration-500 fixed top-0 bottom-0 bg-white right-0 " >
+                <div class="w-full flex items-center justify-between p-[30px]">
+                    <h1 class="text-[1.5rem] text-blue-800">Forward Message</h1>
+                    <div onclick="closeForward()" class="w-[40px] h-[40px] bg-slate-100 rounded-full cursor-pointer flex items-center justify-center">
+                        <i class="fi fi-rr-cross"></i>
+                    </div>
+                </div>
+                <hr class="">
+                <div class="p-[30px]">
+                    <div class="w-full border rounded-lg flex flex-col gap-[15px] p-[20px]">
+                        <div class="w-full flex items-start flex-col gap-[5px]">
+                            <h1 id="taskTitle" class="poppins font-medium ">Hello</h1>
+                            <p id="taskDescription">Test</p>
+                        </div>
+                        <div>
+                            <p id="assignedBy" class="text-[12px] underline underline-offset-4 text-blue-900">Assign By - Shubham Popale</p>
+                        </div>
+                        <div class="w-full flex items-center gap-[10px]">
+                            <div id="taskPriority" class="w-fit h-[40px] text-[13px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                High 
+                            </div>
+                            <div id="taskStatus" class="w-fit h-[40px] text-[13px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                Pending
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-[30px]">
+                    <div class="border w-full p-[20px] bg-slate-100 rounded-lg">
+                        <h3>Forward Message</h3>
+                        <form id="forwardForm" action="" method="POST" class="w-full">
+                            {% csrf_token %}
+                            <div class="w-full px-[20px] bg-white rounded-lg mt-[20px]">
+                                <select name="member" id="member" class="bg-transparent cursor-pointer text-[14px] poppins h-[38px] flex items-center w-full justify-center focus:outline-none text-[#454545]">
+                                    <option value="None" disabled selected class="poppins cursor-pointer text-[#454545] text-[14px]">
+                                        Select member
+                                    </option>
+                                    {% for employee in employees %}
+                                        <option value="{{ employee.id }}"  class="poppins cursor-pointer text-[14px] text-[#454545] capitalize" {% if employee.id|stringformat:"s" == selected_member %}selected{% endif %}>
+                                            {{ employee.full_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="px-[20px] h-[40px] text-[13px] mt-[10px] blueBg text-white rounded-lg poppins">Forward Task</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div id="popupOverlayTask" class="hidden w-full fixed top-0 bottom-0 left-0 right-0 h-screen bg-blue-950 bg-opacity-50 z-[100]"></div>
+        <section class="hidden w-full flex items-center justify-center fixed top-0 bottom-0 left-0 right-0 z-[101] " id="taskPopupContainer" >
+            <div  class="w-[50%] min-h-[10%] max-h-[90%] overflow-y-scroll bg-white border-[2px] rounded-[10px] hideScrollbar p-[40px]">
+                <div class="w-full flex items-center justify-between">
+                    <h1 class="text-blue-900 text-[1.3rem]">Task Information</h1>
+                    <div id="closeTaskPopupBtn" class="w-[40px] cursor-pointer h-[40px] bg-slate-200 rounded-lg flex items-center justify-center">
+                        <i class="fi fi-rr-cross relative top-[2px]"></i>
+                    </div>
+                </div>
+                <div class="w-full mt-[20px]">
+                    <div class="w-full border rounded-lg flex flex-col gap-[15px] p-[20px]">
+                        <div class="w-full flex items-start flex-col gap-[5px]">
+                            <h1 id="popupTaskTitle" class="poppins font-medium ">Hello</h1>
+                            <p id="popupTaskDescription">Test</p>
+                        </div>
+                        <div>
+                            <p id="popupAssignedBy" class="text-[12px] underline underline-offset-4 text-blue-900">Assign By - Shubham Popale</p>
+                        </div>
+                        <div class="w-full flex items-center gap-[10px]">
+                            <div id="popupTaskPriority" class="w-fit h-[40px] text-[12px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                High 
+                            </div>
+                            <div id="popupTaskStatus" class="w-fit h-[40px] capitalize text-[12px] poppins bg-red-500 bg-opacity-50 text-red-800 px-[20px] flex items-center justify-center">
+                                Pending
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    
+
+        {% endblock main-content %}   
+        
+        {% block js-block %}
+            <script>
+               
+
+               
+                function menu(){
+                    console.log("Clicked On Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(0px)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "block";
+                   
+                }
+                function closeMenu(){
+                    console.log("Clicked On close Menu");
+                    let sidebar = document.getElementById("sidebar");
+                    sidebar.style.transform = "translateX(-100%)";
+                    let overlay = document.getElementById("overlay");
+                    overlay.style.display = "none";
+                }
+                // --------------------------- Greeting ------------------------------ 
+                function updateGreeting() {
+                    const greetingElement = document.getElementById("greeting");
+                    const currentTime = new Date();
+                    const hours = currentTime.getHours();
+                    
+                    // Determine the time of day and update the greeting accordingly
+                    if (hours < 12) {
+                        greetingElement.textContent = "Morning";
+                    } else if (hours < 18) {
+                        greetingElement.textContent = "Afternoon";
+                    } else {
+                        greetingElement.textContent = "Evening";
+                    }
+                }
+
+
+                // Call the function to update the greeting when the page loads
+                updateGreeting();
+
+                // -----------------------------  Sidebar Hide and Show ----------------------------
+                // function sidebarHideShow() {
+                //     console.log("Clicked On Sidebar");
+                //     let sidebar = document.getElementById("sidebar");
+                //     let content = document.getElementById("content");
+                //     let topBar = document.getElementById("topBar");
+                //     let taskItems = document.querySelectorAll(".task-item");
+                        
+                //     // Check if the sidebar is hidden (use a flag instead of a class toggle)
+                //     if (sidebar.dataset.hidden === "true") {
+                //         // Show the sidebar
+                //         sidebar.dataset.hidden = "false"; // Update state
+                //         gsap.to(sidebar, {
+                //             x: "0%", // Move sidebar into view
+                //             duration: 0.3, // Adjust the duration for smooth transition
+                //         });
+
+                //         gsap.to(content, {
+                //             width: "82%", // Adjust content width for visible sidebar
+                //             left: "18%",
+                //             delay:0.3,
+                //             duration: 0.3,
+                //         });
+
+                //         gsap.to(topBar, {
+                //             width: "82%",
+                //             left: "18%",
+                //             padding: "0px 50px 0px 20px",
+                //             delay:0.3,
+                //             duration: 0.3,
+                //         });
+                //         taskItems.forEach(taskItem => {
+                //             console.log("Adding w-full to:", taskItem);
+                //             taskItem.classList.add("w-fit");
+                //             taskItem.classList.remove("w-full");
+                //         });
+
+                //     } else {
+                //         // Hide the sidebar
+                //         sidebar.dataset.hidden = "true"; // Update state
+                //         gsap.to(sidebar, {
+                //             x: "-100%", // Move sidebar out of view
+                //             duration: 0.3,
+                //         });
+
+                //         gsap.to(content, {
+                //             width: "100%", // Expand content width to fill the space
+                //             left: "0%",
+                //             delay:0.3,
+                //             duration: 0.3,
+                //         });
+
+                //         gsap.to(topBar, {
+                //             width: "100%",
+                //             left: "0%",
+                //             padding: "0px 100px",
+                //             delay:0.3,
+                //             duration: 0.3,
+                //         });
+                //         taskItems.forEach(taskItem => {
+                //             console.log("Adding w-fit to:", taskItem);
+                //             taskItem.classList.remove("w-fit");
+                //             taskItem.classList.add("w-full");
+                //         });
+                        
+                //     }
+                // }
+               
+                //  -------------------------------- Add Task Btn ( Today Page Js ) -------------------------------
+
+                //-------------------------------------  Popup Task -------------------------------------
+                
+                
+                
+                document.addEventListener("DOMContentLoaded", function () {
+                    const taskElements = document.querySelectorAll(".task");
+                    const popupOverlay = document.getElementById("popupOverlayTask");
+                    const taskPopup = document.getElementById("taskPopupContainer");
+                    const closeTaskPopup = document.getElementById("closeTaskPopupBtn");
+
+                    taskElements.forEach((taskElement) => {
+                        taskElement.addEventListener("click", function () {
+                            const task = {
+                                date: this.dataset.date || "No Date",
+                                title: this.dataset.title || "No Title",
+                                description: this.dataset.desc || "No Description",
+                                employee: this.dataset.employee || "Unknown",
+                                priority: this.dataset.priority || "Not Set",
+                                status: this.dataset.status || "Pending",
+                            };
+
+                            document.getElementById("popupTaskTitle").textContent = task.title;
+                            document.getElementById("popupTaskDescription").textContent = task.description;
+                            document.getElementById("popupAssignedBy").textContent = `Assigned To: ${task.employee}`;
+                            
+                            const taskPriority = document.getElementById("popupTaskPriority");
+                            const taskStatus = document.getElementById("popupTaskStatus");
+
+                            // Set Priority Styles
+                            taskPriority.textContent = task.priority;
+                            taskPriority.className = "px-3 py-1 rounded-md text-sm";
+                            switch (task.priority) {
+                                case "high":
+                                    taskPriority.classList.add("bg-red-500", "bg-opacity-40", "text-red-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "medium":
+                                    taskPriority.classList.add("bg-yellow-200", "text-yellow-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                default:
+                                    taskPriority.classList.add("border-green-600", "bg-green-500", "bg-opacity-40", "text-green-700","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                            }
+
+                            // Set Status Styles
+                            taskStatus.textContent = task.status;
+                            taskStatus.className = "px-3 py-1 rounded-md text-sm";
+                            switch (task.status) {
+                                case "completed":
+                                    taskStatus.classList.add("bg-green-700", "text-white", "border-green-700", "bg-opacity-80","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "pending":
+                                    taskStatus.classList.add("bg-red-300", "text-red-900","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "on Hold":
+                                    taskStatus.classList.add("bg-yellow-200", "text-yellow-700" ,"w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                case "in Progress":
+                                    taskStatus.classList.add("bg-blue-600", "text-blue-950", "bg-opacity-40","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                                    break;
+                                default:
+                                    taskStatus.classList.add("bg-gray-300", "text-black", "border-gray-300", "bg-opacity-40","w-fit", "h-[40px]","text-[12px]", "poppins","flex","items-center","justify-center","capitalize","rounded-none");
+                            }
+
+                            // Show the popup
+                            popupOverlay.classList.remove("hidden");
+                            taskPopup.classList.remove("hidden");
+                        });
+                    });
+
+                    // Close popup on clicking close button or overlay
+                    closeTaskPopup.addEventListener("click", closeTaskPopupHandler);
+                    popupOverlay.addEventListener("click", closeTaskPopupHandler);
+
+                    function closeTaskPopupHandler() {
+                        popupOverlay.classList.add("hidden");
+                        taskPopup.classList.add("hidden");
+                    }
+                });
+
+
+
+                
+
+                // ------------------------------------- Filter Task Search -----------------------------
+                function filterTasks() {
+                    const searchInput = document.getElementById("searchInput").value.toLowerCase(); // Get search input
+                    const tasks = document.querySelectorAll(".task-item"); // Get all tasks
+
+                    tasks.forEach((task) => {
+                        // Retrieve all searchable data from custom attributes
+                        const date = task.getAttribute("data-date");
+                        const title = task.getAttribute("data-title");
+                        const desc = task.getAttribute("data-desc");
+                        const employee = task.getAttribute("data-employee");
+                        const priority = task.getAttribute("data-priority");
+                        const status = task.getAttribute("data-status");
+
+                        // Check if any data matches the search input
+                        if (
+                            date.includes(searchInput) ||
+                            title.includes(searchInput) ||
+                            desc.includes(searchInput) ||
+                            employee.includes(searchInput) ||
+                            priority.includes(searchInput) ||
+                            status.includes(searchInput)
+                        ) {
+                            task.style.display = "flex"; // Show matching task
+                        } else {
+                            task.style.display = "none"; // Hide non-matching task
+                        }
+                    });
+                }
+
+                
+                // -------------------- Text areat Auto rezie after the paste - ( Today Page ) --------------------
+                document.addEventListener("DOMContentLoaded", function () {
+
+                const textarea = document.getElementById("description");
+
+
+                function autoResize() {
+                    textarea.style.height = "0px";
+                    textarea.style.height = textarea.scrollHeight + "px";
+                }
+
+
+                textarea.addEventListener("input", autoResize);
+                textarea.addEventListener("paste", autoResize);
+
+
+                window.addEventListener("load", autoResize);
+                })
+
+                // ----------------------------- Calendar Code -----------------------------
+                document.addEventListener("DOMContentLoaded", function () {
+                    let today = new Date();
+                    let tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1); // Set tomorrow's date
+                    let nextWeek = new Date(today);
+                    nextWeek.setDate(today.getDate() + 7); // Set next week's date
+
+                    let currentDate = today;
+                    let currentMonth = today.getMonth();
+                    let currentYear = today.getFullYear();
+
+                    let selectedDate = today; // Store the currently selected date
+                    let selectedDayCell = null; // To store the currently selected day cell
+
+                    // Function to format the date (DD-MMM-YYYY)
+                    function formatDate(date) {
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        return date.toLocaleDateString('en-GB', options);
+                    }
+
+                    // Show/Hide Date Picker on Button Click (Toggle)
+                    document.getElementById("date-button").addEventListener("click", function (event) {
+                        const datePicker = document.getElementById("date-picker");
+                        datePicker.classList.toggle("hidden"); // Toggle visibility of the picker
+                        populateCalendar(currentMonth, currentYear); // Populate the current month calendar
+                        event.stopPropagation(); // Prevent click event from propagating to the document
+                    });
+
+                    // Function to update the button text by changing <p> content
+                    function updateButtonText(newText) {
+                        const dateLabel = document.getElementById("date-label"); // Target the <p> tag
+                        dateLabel.textContent = newText; // Change the text of <p> tag
+                        console.log("Updated Button Text:", newText); // Log the button text
+                    }
+
+                    // Function to compare two dates (ignoring time)
+                    function compareDates(date1, date2) {
+                        return date1.getFullYear() === date2.getFullYear() &&
+                            date1.getMonth() === date2.getMonth() &&
+                            date1.getDate() === date2.getDate();
+                    }
+
+                    // Populate the Calendar for a given month and year
+                    function populateCalendar(month, year) {
+                        const firstDayOfMonth = new Date(year, month, 1);
+                        const lastDayOfMonth = new Date(year, month + 1, 0);
+                        const daysInMonth = lastDayOfMonth.getDate();
+                        const startingDay = firstDayOfMonth.getDay();
+                        const calendar = document.getElementById("calendar");
+
+                        // Set the current month in the header
+                        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                        document.getElementById("current-month").textContent = `${monthNames[month]} ${year}`;
+
+                        // Clear existing days
+                        calendar.innerHTML = '';
+
+                        // Fill in the empty cells before the first day of the month
+                        for (let i = 0; i < startingDay; i++) {
+                            const emptyCell = document.createElement('div');
+                            calendar.appendChild(emptyCell);
+                        }
+
+                        // Fill the calendar with actual days
+                        for (let day = 1; day <= daysInMonth; day++) {
+                            const dayCell = document.createElement('p');
+                            dayCell.classList.add("text-center", "w-[30px]", "h-[30px]", "text-[14px]", "cursor-pointer", "hover:bg-gray-200", "rounded-lg", "flex", "items-center", "justify-center");
+
+                            const currentDateObj = new Date(year, month, day);
+
+                            // Disable past dates before "Yesterday" but keep today clickable
+                            if (isBeforeToday(currentDateObj, today)) {
+                                dayCell.classList.add("text-gray-400");
+                                dayCell.style.pointerEvents = "none"; // Disable clicking for past dates
+                            } else {
+                                dayCell.classList.add("text-black"); // Keep today and future dates clickable
+                            }
+
+                            // Helper function to compare only date (ignoring time)
+                            function isBeforeToday(date1, date2) {
+                                return date1.getFullYear() < date2.getFullYear() ||
+                                    (date1.getFullYear() === date2.getFullYear() && date1.getMonth() < date2.getMonth()) ||
+                                    (date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() < date2.getDate());
+                            }
+
+                            dayCell.textContent = day;
+
+                            // Click event to select a date
+                            dayCell.addEventListener("click", function () {
+                                selectedDate = currentDateObj;
+
+                                // Check if selected date is today, tomorrow or any other date
+                                if (compareDates(selectedDate, today)) {
+                                    updateButtonText("Today"); // If it's today's date, show "Today"
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("storeDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                } else if (compareDates(selectedDate, tomorrow)) {
+                                    updateButtonText("Tomorrow"); // If it's tomorrow's date, show "Tomorrow"
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("storeDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                } else {
+                                    updateButtonText(formatDate(selectedDate)); // Otherwise, show the formatted date
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("storeDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                }
+
+                                // Highlight the selected date cell
+                                if (selectedDayCell) {
+                                    selectedDayCell.classList.remove('bg-blue-100');
+                                }
+                                dayCell.classList.add('bg-blue-100'); // Add background to the selected date cell
+                                selectedDayCell = dayCell;
+
+                                document.getElementById("date-picker").classList.add("hidden"); // Close the picker
+                            });
+
+                            calendar.appendChild(dayCell);
+                        }
+                    }
+
+                    // Handle Previous and Next Month Buttons
+                    document.getElementById("prev-month").addEventListener("click", function () {
+                        if (currentMonth === 0) {
+                            currentMonth = 11;
+                            currentYear--;
+                        } else {
+                            currentMonth--;
+                        }
+                        populateCalendar(currentMonth, currentYear);
+                    });
+
+                    document.getElementById("next-month").addEventListener("click", function () {
+                        if (currentMonth === 11) {
+                            currentMonth = 0;
+                            currentYear++;
+                        } else {
+                            currentMonth++;
+                        }
+                        populateCalendar(currentMonth, currentYear);
+                    });
+
+                    // Handle Tomorrow Button
+                    document.getElementById("tomorrow-button").addEventListener("click", function () {
+                        selectedDate = tomorrow; // Set selected date to tomorrow
+                        updateButtonText("Tomorrow"); // Update button text to "Tomorrow"
+                        console.log("Selected date:", selectedDate); // Log selected date
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("storeDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("date-picker").classList.add("hidden");
+                    });
+
+                    // Handle Next Week Button
+                    document.getElementById("next-week-button").addEventListener("click", function () {
+                        selectedDate = nextWeek; // Set selected date to next week
+                        updateButtonText(formatDate(nextWeek)); // Update button text to the exact date of next week
+                        console.log("Selected date:", selectedDate); // Log selected date
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("storeDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("date-picker").classList.add("hidden");
+                    });
+
+                    // Handle Today Button
+                    document.getElementById("today-button").addEventListener("click", function () {
+                        selectedDate = today; // Set selected date to today
+                        updateButtonText("Today"); // Update button text to "Today"
+                        console.log("Selected date:", selectedDate); // Log selected date
+
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("storeDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("date-picker").classList.add("hidden");
+                    });
+
+                    // Close the date picker if clicked outside of it
+                    document.addEventListener("click", function (event) {
+                        const datePicker = document.getElementById("date-picker");
+                        const dateButton = document.getElementById("date-button");
+
+                        // Close the date picker if the click is outside the date picker or button
+                        if (!datePicker.contains(event.target) && !dateButton.contains(event.target)) {
+                            datePicker.classList.add("hidden");
+                        }
+                    });
+
+                    // Initialize with the current month
+                    populateCalendar(currentMonth, currentYear);
+                });
+
+                // ----------------------------- Edit Task Calendar Code -----------------------------
+                document.addEventListener("DOMContentLoaded", function () {
+                    let today = new Date();
+                    let tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1); // Set tomorrow's date
+                    let nextWeek = new Date(today);
+                    nextWeek.setDate(today.getDate() + 7); // Set next week's date
+
+                    let currentDate = today;
+                    let currentMonth = today.getMonth();
+                    let currentYear = today.getFullYear();
+
+                    let selectedDate = today; // Store the currently selected date
+                    let selectedDayCell = null; // To store the currently selected day cell
+
+                    // Function to format the date (DD-MMM-YYYY)
+                    function formatDate(date) {
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        return date.toLocaleDateString('en-GB', options);
+                    }
+
+                    // Show/Hide Date Picker on Button Click (Toggle)
+                    document.getElementById("edit-date-button").addEventListener("click", function (event) {
+                        const datePicker = document.getElementById("edit-date-picker");
+                        datePicker.classList.toggle("hidden"); // Toggle visibility of the picker
+                        populateCalendar(currentMonth, currentYear); // Populate the current month calendar
+                        event.stopPropagation(); // Prevent click event from propagating to the document
+                    });
+
+                    // Function to update the button text by changing <p> content
+                    function updateButtonText(newText) {
+                        const dateLabel = document.getElementById("edit-date-label"); // Target the <p> tag
+                        dateLabel.textContent = newText; // Change the text of <p> tag
+                        console.log("Updated Button Text:", newText); // Log the button text
+                    }
+
+                    // Function to compare two dates (ignoring time)
+                    function compareDates(date1, date2) {
+                        return date1.getFullYear() === date2.getFullYear() &&
+                            date1.getMonth() === date2.getMonth() &&
+                            date1.getDate() === date2.getDate();
+                    }
+
+                    // Populate the Calendar for a given month and year
+                    function populateCalendar(month, year) {
+                        const firstDayOfMonth = new Date(year, month, 1);
+                        const lastDayOfMonth = new Date(year, month + 1, 0);
+                        const daysInMonth = lastDayOfMonth.getDate();
+                        const startingDay = firstDayOfMonth.getDay();
+                        const calendar = document.getElementById("edit-calendar");
+
+                        // Set the current month in the header
+                        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                        document.getElementById("edit-current-month").textContent = `${monthNames[month]} ${year}`;
+
+                        // Clear existing days
+                        calendar.innerHTML = '';
+
+                        // Fill in the empty cells before the first day of the month
+                        for (let i = 0; i < startingDay; i++) {
+                            const emptyCell = document.createElement('div');
+                            calendar.appendChild(emptyCell);
+                        }
+
+                        // Fill the calendar with actual days
+                        for (let day = 1; day <= daysInMonth; day++) {
+                            const dayCell = document.createElement('p');
+                            dayCell.classList.add("text-center", "w-[30px]", "h-[30px]", "text-[14px]", "cursor-pointer", "hover:bg-gray-200", "rounded-lg", "flex", "items-center", "justify-center");
+
+                            const currentDateObj = new Date(year, month, day);
+
+                            // Disable past dates before "Yesterday" but keep today clickable
+                            if (isBeforeToday(currentDateObj, today)) {
+                                dayCell.classList.add("text-gray-400");
+                                dayCell.style.pointerEvents = "none"; // Disable clicking for past dates
+                            } else {
+                                dayCell.classList.add("text-black"); // Keep today and future dates clickable
+                            }
+
+                            // Helper function to compare only date (ignoring time)
+                            function isBeforeToday(date1, date2) {
+                                return date1.getFullYear() < date2.getFullYear() ||
+                                    (date1.getFullYear() === date2.getFullYear() && date1.getMonth() < date2.getMonth()) ||
+                                    (date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() < date2.getDate());
+                            }
+
+                            dayCell.textContent = day;
+
+                            // Click event to select a date
+                            dayCell.addEventListener("click", function () {
+                                selectedDate = currentDateObj;
+
+                                // Check if selected date is today, tomorrow or any other date
+                                if (compareDates(selectedDate, today)) {
+                                    updateButtonText("Today"); // If it's today's date, show "Today"
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("editStoreDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                } else if (compareDates(selectedDate, tomorrow)) {
+                                    updateButtonText("Tomorrow"); // If it's tomorrow's date, show "Tomorrow"
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("editStoreDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                } else {
+                                    updateButtonText(formatDate(selectedDate)); // Otherwise, show the formatted date
+                                    console.log("Selected date:", selectedDate); // Log selected date
+                                    // Ensure correct local date in "YYYY-MM-DD" format
+                                    let storeDateInput = document.getElementById("editStoreDate");
+                                    let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                                        .toISOString()
+                                        .split('T')[0]; // Extract only the date part 
+                                    storeDateInput.value = localDate; // Set the value
+                                    console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                                }
+
+                                // Highlight the selected date cell
+                                if (selectedDayCell) {
+                                    selectedDayCell.classList.remove('bg-blue-100');
+                                }
+                                dayCell.classList.add('bg-blue-100'); // Add background to the selected date cell
+                                selectedDayCell = dayCell;
+
+                                document.getElementById("edit-date-picker").classList.add("hidden"); // Close the picker
+                            });
+
+                            calendar.appendChild(dayCell);
+                        }
+                    }
+
+                    // Handle Previous and Next Month Buttons
+                    document.getElementById("edit-prev-month").addEventListener("click", function () {
+                        if (currentMonth === 0) {
+                            currentMonth = 11;
+                            currentYear--;
+                        } else {
+                            currentMonth--;
+                        }
+                        populateCalendar(currentMonth, currentYear);
+                    });
+
+                    document.getElementById("edit-next-month").addEventListener("click", function () {
+                        if (currentMonth === 11) {
+                            currentMonth = 0;
+                            currentYear++;
+                        } else {
+                            currentMonth++;
+                        }
+                        populateCalendar(currentMonth, currentYear);
+                    });
+
+                    // Handle Tomorrow Button
+                    document.getElementById("edit-tomorrow-button").addEventListener("click", function () {
+                        selectedDate = tomorrow; // Set selected date to tomorrow
+                        updateButtonText("Tomorrow"); // Update button text to "Tomorrow"
+                        console.log("Selected date:", selectedDate); // Log selected date
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("editStoreDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("edit-date-picker").classList.add("hidden");
+                    });
+
+                    // Handle Next Week Button
+                    document.getElementById("edit-next-week-button").addEventListener("click", function () {
+                        selectedDate = nextWeek; // Set selected date to next week
+                        updateButtonText(formatDate(nextWeek)); // Update button text to the exact date of next week
+                        console.log("Selected date:", selectedDate); // Log selected date
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("editStoreDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("edit-date-picker").classList.add("hidden");
+                    });
+
+                    // Handle Today Button
+                    document.getElementById("edit-today-button").addEventListener("click", function () {
+                        selectedDate = today; // Set selected date to today
+                        updateButtonText("Today"); // Update button text to "Today"
+                        console.log("Selected date:", selectedDate); // Log selected date
+
+                        // Ensure correct local date in "YYYY-MM-DD" format
+                        let storeDateInput = document.getElementById("editStoreDate");
+                        let localDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000) // Adjust for timezone offset
+                            .toISOString()
+                            .split('T')[0]; // Extract only the date part 
+                        storeDateInput.value = localDate; // Set the value
+                        console.log("Stored date in hidden input:", storeDateInput.value); // Log stored date
+                        populateCalendar(currentMonth, currentYear);
+                        document.getElementById("edit-date-picker").classList.add("hidden");
+                    });
+
+                    // Close the date picker if clicked outside of it
+                    document.addEventListener("click", function (event) {
+                        const datePicker = document.getElementById("edit-date-picker");
+                        const dateButton = document.getElementById("edit-date-button");
+
+                        // Close the date picker if the click is outside the date picker or button
+                        if (!datePicker.contains(event.target) && !dateButton.contains(event.target)) {
+                            datePicker.classList.add("hidden");
+                        }
+                    });
+
+                    // Initialize with the current month
+                    populateCalendar(currentMonth, currentYear);
+
+                    
+                });
+               
+
+                
+                
+            </script>
+            {% if request.user.employee.admin_access or request.user.employee.team_leader_access or request.user.employee.full_access %}
+            <script>
+                // ------------------------------- Edit Task Function ---------------------------------
+                function editTask(task){
+                    console.log("Cliekd On Eidt Taks");
+                    console.log("Clicked to CLose Edit Box");
+                    console.log(task.task_id);
+                    // Set the task data dynamically in the popup
+                    document.getElementById("editTaskTitle").value = task.title;  // Populate the title input
+                    document.getElementById("editTaskDescription").value = task.description;  // Populate the description textarea
+                    let editDate =  document.getElementById("editStoreDate").value;  // Set the task date
+                    console.log(editDate);
+                    
+                                        
+                    document.getElementById("eidt-priority-select").value = task.priority;  // Set the task priority
+                    // Populate the employee selector (this assumes employee ID is part of the task object)
+                    // const memberSelect = document.getElementById("edit-member");
+                    // memberSelect.value = task.employee_id;  // Populate the member select with assigned member
+
+                    // Dynamically set the form action URL to include the task ID
+                    let forwardUrl = "task/task/update_task/" + task.task_id + "/";  // Correctly constructing URL with task ID
+                    document.getElementById("editForm").action = forwardUrl;  // Set form action dynamically
+
+
+
+
+                    let tl = gsap.timeline()
+                    tl.to('#editTaskOverlay',{
+                        y:0,
+                        duration:1,
+                    }),
+                    tl.to('#editTaskSection',{
+                        y:0,
+                        duration:0.5,
+                    })
+                    // tl.to('#editTaskForm',{
+                    //     opacity:1,
+                    //     duration:0.5, 
+                    // })
+
+                    // let taskID =  document.getElementById("edit-task-id").value = task.task_id;
+                    // console.log("We got taskID" + taskID);
+                    // console.log(task.date);
+                    // let editDateLabel = document.getElementById('edit-date-label').innerText(task.date)
+                    let taskID = task.task_id; // First get the task ID
+                        document.getElementById("edit-task-id").value = taskID; // Now set the value of the input field
+                        console.log("We got taskID: " + taskID);
+                        
+
+                        let editDateLabel = document.getElementById('edit-date-label');
+                        editDateLabel.innerText = task.date; // Correct way to set innerText
+                        let editTaskDate = task.date;
+                        console.log("We got the date" + editTaskDate);
+                        
+                         // Store task date in the hidden input field
+                        let storeDateInput = document.getElementById("editStoreDate");
+                        if (task.date) {
+                            // Convert date from format "04 Feb 2025" to "2025-02-04"
+                            const dateParts = task.date.split(' '); // Split the date into day, month, and year
+                            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            
+                            // Get the month index by matching the month name in the array
+                            const monthIndex = monthNames.indexOf(dateParts[1]);
+
+                            // Format the date into "YYYY-MM-DD"
+                            const formattedDate = `${dateParts[2]}-${String(monthIndex + 1).padStart(2, '0')}-${String(dateParts[0]).padStart(2, '0')}`;
+
+                            storeDateInput.value = formattedDate; // Store the formatted date in the hidden input
+                            console.log("Stored date in that input field: " + storeDateInput.value);
+                        } else {
+                            console.log("No date to store in input");
+                        }
+                }
+
+                const editCloseTaskForm = document.getElementById("editCloseTaskForm");
+                editCloseTaskForm.addEventListener("click", function () {
+                    console.log("Clicked to CLose Edit Box");
+                    let tl = gsap.timeline()
+                    tl.to('#editTaskSection',{
+                        transform:"translateY(150%)",
+                        duration:0.5,
+                       
+                    }),
+                    tl.to('#editTaskOverlay',{
+                        transform:"translateY(150%)",
+                        duration:0.5,
+                        
+                    })
+                   
+                    // tl.to('#editTaskSection',{
+                    //     opacity:0,
+                    //     duration:0.5,
+                    // })
+                    
+                });
+                //  --------------------------------------- Forward task --------------------------------------
+                function forwardTask(task) {
+                    console.log("Task Data:", task);
+
+                    if (!task) {
+                        console.warn("Task data is missing or undefined.");
+                        return;
+                    }
+
+                    // Show the forward section and slide the form
+                    let forwardSection = document.getElementById("forwardSection");
+                    let forwardFormMain = document.getElementById("forwardFormMain");
+
+                    if (forwardSection && forwardFormMain) {
+                        forwardSection.style.display = "block";
+                        forwardFormMain.style.transform = "translateX(0px)";
+                    }
+
+                    // Update task content
+                    document.getElementById("taskTitle").textContent = task.title || "No Title";
+                    document.getElementById("taskDescription").textContent = task.description || "No Description";
+                    document.getElementById("assignedBy").textContent = `Assigned By - ${task.assigned_by || "Unknown"}`;
+
+                    const taskPriority = document.getElementById("taskPriority");
+                    const taskStatus = document.getElementById("taskStatus");
+
+                    if (taskPriority) {
+                        taskPriority.textContent = task.priority || "Not Set";
+
+                        // Remove existing priority classes
+                        taskPriority.className = "w-fit h-[40px] text-[13px] poppins px-[20px] flex items-center justify-center";
+
+                        // Add appropriate class based on task priority
+                        switch (task.priority) {
+                            case "High":
+                                taskPriority.classList.add("bg-red-500", "bg-opacity-40", "text-red-700");
+                                break;
+                            case "Medium":
+                                taskPriority.classList.add("bg-yellow-200", "text-yellow-700");
+                                break;
+                            default:
+                                taskPriority.classList.add("border-green-600", "bg-green-500", "bg-opacity-40", "text-green-700");
+                        }
+                    }
+
+                    if (taskStatus) {
+                        taskStatus.textContent = task.status || "Pending";
+
+                        // Remove existing status classes
+                        taskStatus.className = "w-fit h-[40px] text-[13px] poppins px-[20px] flex items-center justify-center";
+
+                        // Add appropriate class based on task status
+                        switch (task.status) {
+                            case "Completed":
+                                taskStatus.classList.add("bg-green-700", "text-white", "border-green-700", "bg-opacity-80");
+                                break;
+                            case "Pending":
+                                taskStatus.classList.add("bg-red-300", "text-red-900");
+                                break;
+                            case "On Hold":
+                                taskStatus.classList.add("bg-yellow-200", "text-yellow-700");
+                                break;
+                            case "In Progress":
+                                taskStatus.classList.add("bg-blue-600", "text-blue-950", "bg-opacity-40");
+                                break;
+                            default:
+                                taskStatus.classList.add("bg-gray-300", "text-black", "border-gray-300", "bg-opacity-40");
+                        }
+                    }
+
+                    // Dynamically set the form action URL to include the task ID
+                    let forwardUrl = "/task/task/forward_task/" + (task.task_id || "default_id") + "/";
+                    let forwardForm = document.getElementById("forwardForm");
+
+                    if (forwardForm) {
+                        forwardForm.action = forwardUrl;
+                    }
+                }
+
+
+                
+                function closeForward(){
+                    let forwardSection = document.getElementById("forwardSection");
+                    forwardSection.style.display = "none";
+                    let forwardFormMain = document.getElementById("forwardFormMain");
+                    forwardFormMain.style.transform = "translateX(100%)";
+                    // gsap.to('#forwardForm',{
+                    //     transform :"translateX(100%)",
+                    //     duration:0.5,
+                    // })
+                }
+
+
+                // ---------------------------------------- Add Task Btn -------------------------------------------
+                document.addEventListener("DOMContentLoaded", () => {
+                    const addTaskBtn = document.querySelector(".addTaskBtn");
+                    const taskForm = document.querySelector("#taskForm");
+        
+                    addTaskBtn.addEventListener("click", function () {
+                        taskForm.style.display = "block";
+                        addTaskBtn.style.display = "none";
+                    });
+        
+                    const closeTaskForm = document.getElementById("closeTaskForm");
+                    closeTaskForm.addEventListener("click", function () {
+                        taskForm.style.display = "none";
+                        addTaskBtn.style.display = "flex";
+                    });
+                });
+                
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    const form = document.querySelector("form");
+                    const titleInput = form.querySelector("input[name='title']");
+                    const descriptionInput = form.querySelector("textarea[name='description']");
+                    const dateInput = form.querySelector("input[name='date']");
+                    const prioritySelect = form.querySelector("#priority-select");
+                    const memberSelect = form.querySelector("#member");
+
+                    form.addEventListener("submit", (e) => {
+                        let isValid = true;
+                        let errorMessage = "";
+
+                        // Title validation
+                        if (titleInput.value.trim() === "") {
+                            isValid = false;
+                            errorMessage += "Please enter a valid title.\n";
+                        }
+
+                        // Description validation
+                        if (descriptionInput.value.trim() === "") {
+                            isValid = false;
+                            errorMessage += "Please provide a description.\n";
+                        }
+
+                        // Date validation
+                        if (!dateInput.value.trim()) {
+                            isValid = false;
+                            errorMessage += "Please select a valid date.\n";
+                        }
+
+                        // Priority validation
+                        if (!prioritySelect.value) {
+                            isValid = false;
+                            errorMessage += "Please select a priority level.\n";
+                        }
+
+                        // Member selection validation
+                        if (memberSelect.value === "None" || memberSelect.value === "") {
+                            isValid = false;
+                            errorMessage += "Please select a member.\n";
+                        }
+
+                        if (!isValid) {
+                            e.preventDefault();
+                            alert(errorMessage);
+                        }
+                    });
+                });
+            </script>
+
+            {% endif %}
+        {% endblock js-block %} 
+
